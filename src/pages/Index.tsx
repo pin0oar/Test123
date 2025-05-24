@@ -12,7 +12,18 @@ import { usePortfolios } from '@/hooks/usePortfolios';
 
 const Index = () => {
   const { language } = useLanguage();
-  const { portfolios, totalValue, totalPnL, totalPnLPercentage } = usePortfolios();
+  const { portfolios, totalValue, totalPnL, totalPnLPercentage, addPortfolio } = usePortfolios();
+
+  const handleAddPortfolio = (portfolioData: { name: string; description?: string; tickers?: string }) => {
+    addPortfolio({
+      name: portfolioData.name,
+      description: portfolioData.description,
+      holdings: [],
+      totalValue: 0,
+      totalPnL: 0,
+      totalPnLPercentage: 0
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -33,8 +44,8 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            <PortfolioSummary portfolios={portfolios} />
-            <QuickActions />
+            <PortfolioSummary portfolios={portfolios} onAddPortfolio={handleAddPortfolio} />
+            <QuickActions onAddPortfolio={handleAddPortfolio} />
           </div>
 
           {/* Sidebar */}
