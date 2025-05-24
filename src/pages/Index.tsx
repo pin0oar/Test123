@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { PortfolioOverview } from '@/components/dashboard/PortfolioOverview';
+import { PerformanceTimeline } from '@/components/dashboard/PerformanceTimeline';
 import { PortfolioSummary } from '@/components/dashboard/PortfolioSummary';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { MarketOverview } from '@/components/dashboard/MarketOverview';
@@ -25,6 +26,9 @@ const Index = () => {
           totalPnLPercentage={totalPnLPercentage}
           portfolioCount={portfolios.length}
         />
+
+        {/* Performance Timeline */}
+        <PerformanceTimeline totalValue={totalValue} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
