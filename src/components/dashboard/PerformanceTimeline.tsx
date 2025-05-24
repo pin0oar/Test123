@@ -102,16 +102,21 @@ export const PerformanceTimeline = ({ totalValue }: PerformanceTimelineProps) =>
         </div>
       </div>
 
-      <div className="h-64">
+      <div className="h-80 mb-4">
         <ChartContainer config={chartConfig}>
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
+            <LineChart 
+              data={chartData}
+              margin={{ top: 5, right: 5, left: 5, bottom: 20 }}
+            >
               <XAxis 
                 dataKey="displayDate"
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
+                height={40}
+                interval="preserveStartEnd"
               />
               <YAxis 
                 hide
