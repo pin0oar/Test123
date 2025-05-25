@@ -92,6 +92,17 @@ export const useSupabasePortfolios = () => {
 
   const addPortfolio = useCallback(async (portfolio: Omit<Portfolio, 'id' | 'createdAt' | 'lastUpdated' | 'holdings'>) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: 'Error',
+          description: 'You must be logged in to create a portfolio',
+          variant: 'destructive'
+        });
+        return;
+      }
+
       const { data, error } = await supabase
         .from('portfolios')
         .insert([{
@@ -99,7 +110,8 @@ export const useSupabasePortfolios = () => {
           description: portfolio.description,
           total_value: portfolio.totalValue,
           total_pnl: portfolio.totalPnL,
-          total_pnl_percentage: portfolio.totalPnLPercentage
+          total_pnl_percentage: portfolio.totalPnLPercentage,
+          user_id: user.id
         }])
         .select()
         .single();

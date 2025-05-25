@@ -18,7 +18,6 @@ const Index = () => {
     addPortfolio({
       name: portfolioData.name,
       description: portfolioData.description,
-      holdings: [],
       totalValue: 0,
       totalPnL: 0,
       totalPnLPercentage: 0
