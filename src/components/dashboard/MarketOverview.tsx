@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useMarketData } from '@/hooks/useMarketData';
 import { useDataSync } from '@/hooks/useDataSync';
-import { TrendingUp, TrendingDown, Database, RefreshCw, Download } from 'lucide-react';
+import { TrendingUp, TrendingDown, Database, RefreshCw, Download, AlertTriangle } from 'lucide-react';
 
 export const MarketOverview = () => {
   const { t } = useLanguage();
@@ -25,6 +25,16 @@ export const MarketOverview = () => {
     }
   };
 
+  const formatDateTime = (date: Date) => {
+    return date.toLocaleString(undefined, { 
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false
+    });
+  };
+
   const formatLastUpdated = (date: Date) => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -37,12 +47,14 @@ export const MarketOverview = () => {
     } else if (diffMins < 60) {
       return `${diffMins} minutes ago`;
     } else {
-      return date.toLocaleTimeString(undefined, { 
-        hour: '2-digit', 
-        minute: '2-digit'
-      });
+      return formatDateTime(date);
     }
   };
+
+  // Check if we're using fallback data by seeing if all changes are rounded numbers
+  const isUsingFallbackData = markets.some(market => 
+    market.change === 0 || (market.change % 1 === 0 && market.changePercent % 0.1 === 0)
+  );
 
   return (
     <Card className="p-6">
@@ -58,6 +70,15 @@ export const MarketOverview = () => {
               Database
             </span>
           </div>
+          
+          {isUsingFallbackData && (
+            <div className="flex items-center space-x-1">
+              <AlertTriangle className="h-4 w-4 text-orange-500" />
+              <span className="text-xs font-medium text-orange-600">
+                Fallback
+              </span>
+            </div>
+          )}
           
           <Button
             variant="ghost"
@@ -112,6 +133,8 @@ export const MarketOverview = () => {
         <div className="space-y-4">
           {markets.map((market) => {
             const isPositive = market.change >= 0;
+            const marketLastUpdated = market.lastUpdated ? new Date(market.lastUpdated) : null;
+            
             return (
               <div key={market.symbol} className="flex items-center justify-between">
                 <div>
@@ -124,6 +147,11 @@ export const MarketOverview = () => {
                       maximumFractionDigits: 2 
                     })}
                   </p>
+                  {marketLastUpdated && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {formatDateTime(marketLastUpdated)}
+                    </p>
+                  )}
                 </div>
                 
                 <div className="text-right">
@@ -153,7 +181,7 @@ export const MarketOverview = () => {
       
       <div className="flex items-center justify-between mt-4 text-xs text-gray-500 dark:text-gray-400">
         <span>
-          Data from Yahoo Finance
+          {isUsingFallbackData ? 'Fallback data' : 'Data from Yahoo Finance'}
         </span>
         {lastUpdated && (
           <span>

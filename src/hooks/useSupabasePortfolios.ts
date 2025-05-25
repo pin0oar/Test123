@@ -9,6 +9,15 @@ export const useSupabasePortfolios = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  const calculatePortfolioTotals = (holdings: Holding[]) => {
+    const totalValue = holdings.reduce((sum, holding) => sum + holding.totalValue, 0);
+    const totalPnL = holdings.reduce((sum, holding) => sum + holding.pnl, 0);
+    const totalCost = totalValue - totalPnL;
+    const totalPnLPercentage = totalCost > 0 ? (totalPnL / totalCost) * 100 : 0;
+    
+    return { totalValue, totalPnL, totalPnLPercentage };
+  };
+
   const fetchPortfolios = useCallback(async () => {
     try {
       setLoading(true);
@@ -48,16 +57,8 @@ export const useSupabasePortfolios = () => {
 
       if (portfoliosError) throw portfoliosError;
 
-      const transformedPortfolios: Portfolio[] = (portfoliosData || []).map(portfolio => ({
-        id: portfolio.id,
-        name: portfolio.name,
-        description: portfolio.description,
-        totalValue: Number(portfolio.total_value),
-        totalPnL: Number(portfolio.total_pnl),
-        totalPnLPercentage: Number(portfolio.total_pnl_percentage),
-        createdAt: new Date(portfolio.created_at),
-        lastUpdated: new Date(portfolio.updated_at),
-        holdings: (portfolio.holdings || []).map((holding: any): Holding => ({
+      const transformedPortfolios: Portfolio[] = (portfoliosData || []).map(portfolio => {
+        const holdings: Holding[] = (portfolio.holdings || []).map((holding: any): Holding => ({
           id: holding.id,
           symbol: holding.symbol,
           name: holding.name,
@@ -74,8 +75,23 @@ export const useSupabasePortfolios = () => {
           dividendYield: Number(holding.dividend_yield),
           createdAt: new Date(holding.created_at),
           lastUpdated: new Date(holding.updated_at)
-        }))
-      }));
+        }));
+
+        // Calculate actual totals from holdings
+        const calculatedTotals = calculatePortfolioTotals(holdings);
+
+        return {
+          id: portfolio.id,
+          name: portfolio.name,
+          description: portfolio.description,
+          totalValue: calculatedTotals.totalValue,
+          totalPnL: calculatedTotals.totalPnL,
+          totalPnLPercentage: calculatedTotals.totalPnLPercentage,
+          createdAt: new Date(portfolio.created_at),
+          lastUpdated: new Date(portfolio.updated_at),
+          holdings
+        };
+      });
 
       setPortfolios(transformedPortfolios);
     } catch (error) {
