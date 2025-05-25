@@ -25,9 +25,9 @@ interface QuoteResult {
   longName: string;
 }
 
-// Rate limiting - simple in-memory store
+// Rate limiting - simple in-memory store with more reasonable limits
 const requestTimes: number[] = [];
-const MAX_REQUESTS_PER_MINUTE = 10;
+const MAX_REQUESTS_PER_MINUTE = 30; // Increased from 10 to 30
 
 function isRateLimited(): boolean {
   const now = Date.now();
@@ -62,14 +62,25 @@ async function makeYahooRequest(url: string): Promise<Response> {
 
   console.log(`Making request to: ${url}`);
   
-  const response = await fetch(url, {
-    method: 'GET',
-    headers,
-    signal: AbortSignal.timeout(10000) // 10 second timeout
-  });
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+      signal: AbortSignal.timeout(15000) // Increased timeout to 15 seconds
+    });
 
-  console.log(`Response status: ${response.status}`);
-  return response;
+    console.log(`Response status: ${response.status}`);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Yahoo API error: ${response.status} - ${errorText}`);
+    }
+    
+    return response;
+  } catch (error) {
+    console.error(`Request failed: ${error.message}`);
+    throw error;
+  }
 }
 
 serve(async (req) => {
@@ -104,13 +115,47 @@ serve(async (req) => {
         );
       }
 
-      // Yahoo Finance search API
-      const searchUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=10&newsCount=0`;
-      
-      const response = await makeYahooRequest(searchUrl);
+      try {
+        // Try alternative Yahoo Finance endpoints
+        const searchUrls = [
+          `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=10&newsCount=0`,
+          `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=10&newsCount=0`
+        ];
 
-      if (!response.ok) {
-        console.error(`Yahoo Finance search API error: ${response.status} ${response.statusText}`);
+        let response;
+        let lastError;
+
+        for (const url of searchUrls) {
+          try {
+            response = await makeYahooRequest(url);
+            if (response.ok) break;
+          } catch (error) {
+            lastError = error;
+            console.log(`Failed with ${url}, trying next...`);
+          }
+        }
+
+        if (!response || !response.ok) {
+          throw lastError || new Error('All search endpoints failed');
+        }
+
+        const data = await response.json();
+        const tickers: TickerSearchResult[] = data.quotes?.map((quote: any) => ({
+          symbol: quote.symbol,
+          shortname: quote.shortname || quote.longname,
+          longname: quote.longname || quote.shortname,
+          typeDisp: quote.typeDisp || 'Stock',
+          exchange: quote.exchange,
+          exchDisp: quote.exchDisp || quote.exchange
+        })) || [];
+
+        return new Response(
+          JSON.stringify({ tickers }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+
+      } catch (error) {
+        console.error(`Search API error: ${error.message}`);
         
         // Return fallback data for demo purposes when API fails
         const fallbackTickers: TickerSearchResult[] = [
@@ -129,21 +174,6 @@ serve(async (req) => {
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-
-      const data = await response.json();
-      const tickers: TickerSearchResult[] = data.quotes?.map((quote: any) => ({
-        symbol: quote.symbol,
-        shortname: quote.shortname || quote.longname,
-        longname: quote.longname || quote.shortname,
-        typeDisp: quote.typeDisp || 'Stock',
-        exchange: quote.exchange,
-        exchDisp: quote.exchDisp || quote.exchange
-      })) || [];
-
-      return new Response(
-        JSON.stringify({ tickers }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
     }
 
     if (action === 'quote') {
@@ -154,13 +184,48 @@ serve(async (req) => {
         );
       }
 
-      // Yahoo Finance quote API
-      const quoteUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}`;
-      
-      const response = await makeYahooRequest(quoteUrl);
+      try {
+        // Try multiple quote endpoints
+        const quoteUrls = [
+          `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}`,
+          `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}`
+        ];
 
-      if (!response.ok) {
-        console.error(`Yahoo Finance quote API error: ${response.status} ${response.statusText}`);
+        let response;
+        let lastError;
+
+        for (const url of quoteUrls) {
+          try {
+            response = await makeYahooRequest(url);
+            if (response.ok) break;
+          } catch (error) {
+            lastError = error;
+            console.log(`Failed with ${url}, trying next...`);
+          }
+        }
+
+        if (!response || !response.ok) {
+          throw lastError || new Error('All quote endpoints failed');
+        }
+
+        const data = await response.json();
+        const quotes: QuoteResult[] = data.quoteResponse?.result?.map((quote: any) => ({
+          symbol: quote.symbol,
+          regularMarketPrice: quote.regularMarketPrice || 0,
+          regularMarketChange: quote.regularMarketChange || 0,
+          regularMarketChangePercent: quote.regularMarketChangePercent || 0,
+          currency: quote.currency || 'USD',
+          shortName: quote.shortName || quote.displayName,
+          longName: quote.longName || quote.shortName
+        })) || [];
+
+        return new Response(
+          JSON.stringify({ quotes }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+
+      } catch (error) {
+        console.error(`Quote API error: ${error.message}`);
         
         // Return empty quotes array when API fails
         return new Response(
@@ -168,33 +233,58 @@ serve(async (req) => {
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-
-      const data = await response.json();
-      const quotes: QuoteResult[] = data.quoteResponse?.result?.map((quote: any) => ({
-        symbol: quote.symbol,
-        regularMarketPrice: quote.regularMarketPrice || 0,
-        regularMarketChange: quote.regularMarketChange || 0,
-        regularMarketChangePercent: quote.regularMarketChangePercent || 0,
-        currency: quote.currency || 'USD',
-        shortName: quote.shortName || quote.displayName,
-        longName: quote.longName || quote.shortName
-      })) || [];
-
-      return new Response(
-        JSON.stringify({ quotes }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
     }
 
     if (action === 'markets') {
-      // Get major market indices
-      const majorIndices = '^GSPC,^DJI,^IXIC,^RUT,^VIX,^TNX';
-      const quoteUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${majorIndices}`;
-      
-      const response = await makeYahooRequest(quoteUrl);
+      try {
+        // Get major market indices with multiple fallback endpoints
+        const majorIndices = '^GSPC,^DJI,^IXIC,^RUT,^VIX,^TNX';
+        const marketUrls = [
+          `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${majorIndices}`,
+          `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${majorIndices}`
+        ];
 
-      if (!response.ok) {
-        console.error(`Yahoo Finance markets API error: ${response.status} ${response.statusText}`);
+        let response;
+        let lastError;
+
+        for (const url of marketUrls) {
+          try {
+            response = await makeYahooRequest(url);
+            if (response.ok) break;
+          } catch (error) {
+            lastError = error;
+            console.log(`Failed with ${url}, trying next...`);
+          }
+        }
+
+        if (!response || !response.ok) {
+          throw lastError || new Error('All market endpoints failed');
+        }
+
+        const data = await response.json();
+        const markets = data.quoteResponse?.result?.map((quote: any) => ({
+          symbol: quote.symbol,
+          name: quote.shortName || quote.displayName,
+          price: quote.regularMarketPrice || 0,
+          change: quote.regularMarketChange || 0,
+          changePercent: quote.regularMarketChangePercent || 0,
+          currency: quote.currency || 'USD'
+        })) || [];
+
+        // Only return markets with valid data
+        const validMarkets = markets.filter(m => m.price > 0);
+
+        if (validMarkets.length > 0) {
+          return new Response(
+            JSON.stringify({ markets: validMarkets }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } else {
+          throw new Error('No valid market data received');
+        }
+
+      } catch (error) {
+        console.error(`Markets API error: ${error.message}`);
         
         // Return fallback market data when API fails
         const fallbackMarkets = [
@@ -208,21 +298,6 @@ serve(async (req) => {
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-
-      const data = await response.json();
-      const markets = data.quoteResponse?.result?.map((quote: any) => ({
-        symbol: quote.symbol,
-        name: quote.shortName || quote.displayName,
-        price: quote.regularMarketPrice || 0,
-        change: quote.regularMarketChange || 0,
-        changePercent: quote.regularMarketChangePercent || 0,
-        currency: quote.currency || 'USD'
-      })) || [];
-
-      return new Response(
-        JSON.stringify({ markets }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
     }
 
     return new Response(

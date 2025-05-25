@@ -46,11 +46,22 @@ export const MarketOverview = () => {
   };
 
   const formatLastUpdated = (date: Date) => {
-    return date.toLocaleTimeString(undefined, { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      second: '2-digit'
-    });
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    
+    if (diffMins < 1) {
+      return 'Just now';
+    } else if (diffMins === 1) {
+      return '1 minute ago';
+    } else if (diffMins < 60) {
+      return `${diffMins} minutes ago`;
+    } else {
+      return date.toLocaleTimeString(undefined, { 
+        hour: '2-digit', 
+        minute: '2-digit'
+      });
+    }
   };
 
   return (
