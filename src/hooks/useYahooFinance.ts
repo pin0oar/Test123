@@ -41,14 +41,7 @@ export const useYahooFinance = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke('yahoo-finance', {
-        body: null,
-        headers: {},
-        method: 'GET',
-      }, {
-        query: new URLSearchParams({
-          action: 'search',
-          q: query
-        })
+        body: { action: 'search', q: query }
       });
 
       if (error) throw error;
@@ -72,14 +65,7 @@ export const useYahooFinance = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke('yahoo-finance', {
-        body: null,
-        headers: {},
-        method: 'GET',
-      }, {
-        query: new URLSearchParams({
-          action: 'quote',
-          symbols: symbols.join(',')
-        })
+        body: { action: 'quote', symbols: symbols.join(',') }
       });
 
       if (error) throw error;
@@ -101,13 +87,7 @@ export const useYahooFinance = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke('yahoo-finance', {
-        body: null,
-        headers: {},
-        method: 'GET',
-      }, {
-        query: new URLSearchParams({
-          action: 'markets'
-        })
+        body: { action: 'markets' }
       });
 
       if (error) throw error;

@@ -32,12 +32,10 @@ serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const action = url.searchParams.get('action');
+    const { action, q, symbols } = await req.json();
     
     if (action === 'search') {
-      const query = url.searchParams.get('q');
-      if (!query) {
+      if (!q) {
         return new Response(
           JSON.stringify({ error: 'Query parameter is required' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -45,7 +43,7 @@ serve(async (req) => {
       }
 
       // Yahoo Finance search API
-      const searchUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=10&newsCount=0`;
+      const searchUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=10&newsCount=0`;
       
       const response = await fetch(searchUrl, {
         headers: {
@@ -74,7 +72,6 @@ serve(async (req) => {
     }
 
     if (action === 'quote') {
-      const symbols = url.searchParams.get('symbols');
       if (!symbols) {
         return new Response(
           JSON.stringify({ error: 'Symbols parameter is required' }),
