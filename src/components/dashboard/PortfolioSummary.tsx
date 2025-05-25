@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -15,7 +16,12 @@ interface PortfolioSummaryProps {
 
 export const PortfolioSummary = ({ portfolios, onAddPortfolio }: PortfolioSummaryProps) => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handlePortfolioClick = (portfolioId: string) => {
+    navigate(`/portfolio/${portfolioId}`);
+  };
 
   if (portfolios.length === 0) {
     return (
@@ -64,6 +70,7 @@ export const PortfolioSummary = ({ portfolios, onAddPortfolio }: PortfolioSummar
               <div
                 key={portfolio.id}
                 className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                onClick={() => handlePortfolioClick(portfolio.id)}
               >
                 <div className="flex items-center space-x-4">
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">

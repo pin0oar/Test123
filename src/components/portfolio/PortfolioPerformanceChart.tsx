@@ -4,16 +4,17 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage';
 import { formatCurrency } from '@/utils/formatters';
+import { Portfolio } from '@/types/portfolio';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 
-interface PerformanceTimelineProps {
-  totalValue: number;
+interface PortfolioPerformanceChartProps {
+  portfolio: Portfolio;
 }
 
 type TimeWindow = '1D' | '5D' | '1M' | '6M' | 'YTD' | '1Y' | '5Y';
 
-export const PerformanceTimeline = ({ totalValue }: PerformanceTimelineProps) => {
+export const PortfolioPerformanceChart = ({ portfolio }: PortfolioPerformanceChartProps) => {
   const { t } = useLanguage();
   const [selectedPeriod, setSelectedPeriod] = useState<TimeWindow>('1M');
 
@@ -27,9 +28,8 @@ export const PerformanceTimeline = ({ totalValue }: PerformanceTimelineProps) =>
     { key: '5Y', label: '5Y' },
   ];
 
-  // Mock performance data - in real app this would come from API
   const generateMockData = (period: TimeWindow) => {
-    const baseValue = totalValue;
+    const baseValue = portfolio.totalValue;
     const dataPoints = period === '1D' ? 24 : period === '5D' ? 120 : 30;
     const variance = period === '1D' ? 0.02 : period === '5D' ? 0.05 : 0.1;
     
@@ -55,8 +55,8 @@ export const PerformanceTimeline = ({ totalValue }: PerformanceTimelineProps) =>
   };
 
   const chartData = generateMockData(selectedPeriod);
-  const currentValue = chartData[chartData.length - 1]?.value || totalValue;
-  const startValue = chartData[0]?.value || totalValue;
+  const currentValue = chartData[chartData.length - 1]?.value || portfolio.totalValue;
+  const startValue = chartData[0]?.value || portfolio.totalValue;
   const changeValue = currentValue - startValue;
   const changePercentage = ((changeValue / startValue) * 100);
   const isPositive = changeValue >= 0;
