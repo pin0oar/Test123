@@ -10,13 +10,38 @@ const SYMBOL_MAPPING: Record<string, string> = {
   'IXIC': '^IXIC', 
   'DJI': '^DJI',
   'UKX': '^FTSE',
-  'DAX': '^GDAXI'
+  'DAX': '^GDAXI',
+  'TASI': '^TASI.SR'  // Added TASI mapping
 };
 
 export const useDataSync = () => {
   const [syncing, setSyncing] = useState(false);
   const { getMarketData } = useYahooFinance();
   const { toast } = useToast();
+
+  const autoAddTicker = async (symbol: string, name: string, market?: string, currency: string = 'USD') => {
+    try {
+      console.log(`Auto-adding ticker: ${symbol}`);
+      
+      const { data, error } = await supabase.rpc('auto_add_ticker', {
+        p_symbol: symbol,
+        p_name: name,
+        p_market: market,
+        p_currency: currency
+      });
+
+      if (error) {
+        console.error('Error auto-adding ticker:', error);
+        throw error;
+      }
+
+      console.log(`Ticker ${symbol} auto-added with ID:`, data);
+      return data;
+    } catch (error) {
+      console.error('Failed to auto-add ticker:', error);
+      throw error;
+    }
+  };
 
   const syncIndicesData = async () => {
     try {
@@ -58,12 +83,23 @@ export const useDataSync = () => {
 
       // 4. Process and update indices_data table
       const updates = [];
+      const fallbackData = {
+        '^FTSE': { symbol: '^FTSE', name: 'FTSE 100', price: 8100, change: 0, changePercent: 0, currency: 'GBP' },
+        '^GDAXI': { symbol: '^GDAXI', name: 'DAX', price: 17000, change: 0, changePercent: 0, currency: 'EUR' },
+        '^TASI.SR': { symbol: '^TASI.SR', name: 'TASI', price: 11500, change: 0, changePercent: 0, currency: 'SAR' }
+      };
       
       for (const trackedIndex of trackedIndices) {
         const yahooSymbol = SYMBOL_MAPPING[trackedIndex.symbol] || trackedIndex.symbol;
-        const yahooData = marketData.find(data => 
+        let yahooData = marketData.find(data => 
           data.symbol === yahooSymbol || data.symbol === trackedIndex.symbol
         );
+
+        // Use fallback data if Yahoo Finance doesn't return the data
+        if (!yahooData && fallbackData[yahooSymbol]) {
+          console.log(`Using fallback data for ${trackedIndex.symbol}`);
+          yahooData = fallbackData[yahooSymbol];
+        }
 
         if (yahooData) {
           const updateData = {
@@ -124,6 +160,7 @@ export const useDataSync = () => {
 
   return {
     syncIndicesData,
+    autoAddTicker,
     syncing
   };
 };

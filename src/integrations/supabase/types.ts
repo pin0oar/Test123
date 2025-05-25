@@ -402,7 +402,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      auto_add_ticker: {
+        Args: {
+          p_symbol: string
+          p_name: string
+          p_market?: string
+          p_currency?: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
