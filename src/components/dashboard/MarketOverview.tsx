@@ -32,6 +32,17 @@ export const MarketOverview = () => {
     }
   };
 
+  const formatDataTimestamp = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
@@ -62,6 +73,15 @@ export const MarketOverview = () => {
       {loading && markets.length === 0 ? (
         <div className="text-center py-4">
           <div className="text-sm text-gray-500 dark:text-gray-400">Loading market data...</div>
+        </div>
+      ) : markets.length === 0 ? (
+        <div className="text-center py-8">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            No market data available
+          </div>
+          <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            Market indices data will appear here when available
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
@@ -112,7 +132,7 @@ export const MarketOverview = () => {
         </span>
         {lastUpdated && (
           <span>
-            Updated: {formatLastUpdated(lastUpdated)}
+            Refreshed: {formatLastUpdated(lastUpdated)}
           </span>
         )}
       </div>

@@ -10,6 +10,7 @@ interface MarketData {
   change: number;
   changePercent: number;
   currency: string;
+  lastUpdated?: string;
 }
 
 export const useMarketData = () => {
@@ -40,7 +41,8 @@ export const useMarketData = () => {
         price: Number(item.price),
         change: Number(item.change_amount),
         changePercent: Number(item.change_percentage),
-        currency: item.currency
+        currency: item.currency,
+        lastUpdated: item.last_updated
       }));
 
       setMarkets(marketData);
