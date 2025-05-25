@@ -86,7 +86,7 @@ export const MarketOverview = () => {
             onClick={handleSync}
             disabled={syncing}
             className="h-8 w-8"
-            title="Sync from Yahoo Finance"
+            title="Sync from Twelve Data"
           >
             <Download className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
           </Button>
@@ -107,7 +107,7 @@ export const MarketOverview = () => {
       {(loading && markets.length === 0) || syncing ? (
         <div className="text-center py-4">
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            {syncing ? 'Syncing from Yahoo Finance...' : 'Loading market data...'}
+            {syncing ? 'Syncing from Twelve Data...' : 'Loading market data...'}
           </div>
         </div>
       ) : markets.length === 0 ? (
@@ -116,7 +116,7 @@ export const MarketOverview = () => {
             No market data available
           </div>
           <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Click the sync button to fetch data from Yahoo Finance
+            Click the sync button to fetch data from Twelve Data
           </div>
           <Button 
             variant="outline" 
@@ -181,7 +181,7 @@ export const MarketOverview = () => {
       
       <div className="flex items-center justify-between mt-4 text-xs text-gray-500 dark:text-gray-400">
         <span>
-          {isUsingFallbackData ? 'Fallback data' : 'Data from Yahoo Finance'}
+          {isUsingFallbackData ? 'Fallback data' : 'Data from Twelve Data'}
         </span>
         {lastUpdated && (
           <span>

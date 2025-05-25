@@ -1,22 +1,22 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useYahooFinance } from './useYahooFinance';
+import { useTwelveData } from './useTwelveData';
 import { useToast } from '@/hooks/use-toast';
 
-// Mapping from our tracked symbols to Yahoo Finance symbols
+// Mapping from our tracked symbols to Twelve Data symbols
 const SYMBOL_MAPPING: Record<string, string> = {
-  'SPX': '^GSPC',
-  'IXIC': '^IXIC', 
-  'DJI': '^DJI',
-  'UKX': '^FTSE',
-  'DAX': '^GDAXI',
-  'TASI': '^TASI.SR'  // Added TASI mapping
+  'SPX': 'SPX',
+  'IXIC': 'IXIC', 
+  'DJI': 'DJI',
+  'UKX': 'UKX',
+  'DAX': 'DAX',
+  'TASI': 'TASI.TADAWUL'
 };
 
 export const useDataSync = () => {
   const [syncing, setSyncing] = useState(false);
-  const { getMarketData } = useYahooFinance();
+  const { getMarketData } = useTwelveData();
   const { toast } = useToast();
 
   const autoAddTicker = async (symbol: string, name: string, market?: string, currency: string = 'USD') => {
@@ -46,7 +46,7 @@ export const useDataSync = () => {
   const syncIndicesData = async () => {
     try {
       setSyncing(true);
-      console.log('Starting indices data sync...');
+      console.log('Starting indices data sync using Twelve Data...');
 
       // 1. Get all active tracked indices
       const { data: trackedIndices, error: fetchError } = await supabase
@@ -66,48 +66,30 @@ export const useDataSync = () => {
 
       console.log('Found tracked indices:', trackedIndices);
 
-      // 2. Map our symbols to Yahoo Finance symbols
-      const yahooSymbols = trackedIndices
-        .map(index => SYMBOL_MAPPING[index.symbol] || index.symbol)
-        .filter(Boolean);
-
-      console.log('Yahoo symbols to fetch:', yahooSymbols);
-
-      // 3. Fetch data from Yahoo Finance
+      // 2. Fetch data from Twelve Data
       const marketData = await getMarketData();
-      console.log('Market data from Yahoo:', marketData);
+      console.log('Market data from Twelve Data:', marketData);
 
       if (!marketData || marketData.length === 0) {
-        throw new Error('No market data received from Yahoo Finance');
+        throw new Error('No market data received from Twelve Data');
       }
 
-      // 4. Process and update indices_data table
+      // 3. Process and update indices_data table
       const updates = [];
-      const fallbackData = {
-        '^FTSE': { symbol: '^FTSE', name: 'FTSE 100', price: 8100, change: 0, changePercent: 0, currency: 'GBP' },
-        '^GDAXI': { symbol: '^GDAXI', name: 'DAX', price: 17000, change: 0, changePercent: 0, currency: 'EUR' },
-        '^TASI.SR': { symbol: '^TASI.SR', name: 'TASI', price: 11500, change: 0, changePercent: 0, currency: 'SAR' }
-      };
       
       for (const trackedIndex of trackedIndices) {
-        const yahooSymbol = SYMBOL_MAPPING[trackedIndex.symbol] || trackedIndex.symbol;
-        let yahooData = marketData.find(data => 
-          data.symbol === yahooSymbol || data.symbol === trackedIndex.symbol
+        const twelveDataSymbol = SYMBOL_MAPPING[trackedIndex.symbol] || trackedIndex.symbol;
+        let twelveData = marketData.find(data => 
+          data.symbol === twelveDataSymbol || data.symbol === trackedIndex.symbol
         );
 
-        // Use fallback data if Yahoo Finance doesn't return the data
-        if (!yahooData && fallbackData[yahooSymbol]) {
-          console.log(`Using fallback data for ${trackedIndex.symbol}`);
-          yahooData = fallbackData[yahooSymbol];
-        }
-
-        if (yahooData) {
+        if (twelveData) {
           const updateData = {
             symbol: trackedIndex.symbol,
             name: trackedIndex.name,
-            price: yahooData.price,
-            change_amount: yahooData.change,
-            change_percentage: yahooData.changePercent,
+            price: twelveData.price,
+            change_amount: twelveData.change,
+            change_percentage: twelveData.changePercent,
             currency: trackedIndex.currency,
             last_updated: new Date().toISOString(),
             is_active: true,
@@ -123,7 +105,7 @@ export const useDataSync = () => {
         throw new Error('No matching data found for tracked indices');
       }
 
-      // 5. Upsert data into indices_data table
+      // 4. Upsert data into indices_data table
       const { error: upsertError } = await supabase
         .from('indices_data')
         .upsert(updates, { 
@@ -136,11 +118,11 @@ export const useDataSync = () => {
         throw upsertError;
       }
 
-      console.log(`Successfully synced ${updates.length} indices`);
+      console.log(`Successfully synced ${updates.length} indices from Twelve Data`);
       
       toast({
         title: 'Success',
-        description: `Synced ${updates.length} market indices from Yahoo Finance`,
+        description: `Synced ${updates.length} market indices from Twelve Data`,
       });
 
       return updates.length;
