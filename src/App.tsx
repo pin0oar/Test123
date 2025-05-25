@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import PortfolioDetail from "./pages/PortfolioDetail";
+import TickerDetail from "./pages/TickerDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,11 @@ const App = () => (
           <Route path="/portfolio/:id" element={
             <ProtectedRoute>
               <PortfolioDetail />
+            </ProtectedRoute>
+          } />
+          <Route path="/ticker/:symbol" element={
+            <ProtectedRoute>
+              <TickerDetail />
             </ProtectedRoute>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
