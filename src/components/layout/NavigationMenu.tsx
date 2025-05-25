@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage';
 import { BarChart3, Wallet, Calculator, TrendingUp, Book, Settings, PieChart } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 interface NavigationMenuProps {
   isMobile?: boolean;
@@ -9,6 +10,7 @@ interface NavigationMenuProps {
 
 export const NavigationMenu = ({ isMobile = false }: NavigationMenuProps) => {
   const { t } = useLanguage();
+  const location = useLocation();
 
   const menuItems = [
     { icon: BarChart3, label: t('dashboard'), href: '/' },
@@ -24,14 +26,15 @@ export const NavigationMenu = ({ isMobile = false }: NavigationMenuProps) => {
     return (
       <nav className="space-y-2">
         {menuItems.map((item) => (
-          <Button
-            key={item.href}
-            variant="ghost"
-            className="w-full justify-start"
-          >
-            <item.icon className="h-4 w-4 mr-2" />
-            {item.label}
-          </Button>
+          <Link key={item.href} to={item.href}>
+            <Button
+              variant="ghost"
+              className={`w-full justify-start ${location.pathname === item.href ? 'bg-accent' : ''}`}
+            >
+              <item.icon className="h-4 w-4 mr-2" />
+              {item.label}
+            </Button>
+          </Link>
         ))}
       </nav>
     );
@@ -40,14 +43,15 @@ export const NavigationMenu = ({ isMobile = false }: NavigationMenuProps) => {
   return (
     <nav className="flex items-center space-x-1">
       {menuItems.map((item) => (
-        <Button
-          key={item.href}
-          variant="ghost"
-          className="text-sm"
-        >
-          <item.icon className="h-4 w-4 mr-1" />
-          {item.label}
-        </Button>
+        <Link key={item.href} to={item.href}>
+          <Button
+            variant="ghost"
+            className={`text-sm ${location.pathname === item.href ? 'bg-accent' : ''}`}
+          >
+            <item.icon className="h-4 w-4 mr-1" />
+            {item.label}
+          </Button>
+        </Link>
       ))}
     </nav>
   );

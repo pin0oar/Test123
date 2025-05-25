@@ -27,6 +27,36 @@ const App = () => (
               <Index />
             </ProtectedRoute>
           } />
+          <Route path="/portfolios" element={
+            <ProtectedRoute>
+              <Index />
+            </ProtectedRoute>
+          } />
+          <Route path="/holdings" element={
+            <ProtectedRoute>
+              <Holdings />
+            </ProtectedRoute>
+          } />
+          <Route path="/dividends" element={
+            <ProtectedRoute>
+              <Index />
+            </ProtectedRoute>
+          } />
+          <Route path="/zakat" element={
+            <ProtectedRoute>
+              <Index />
+            </ProtectedRoute>
+          } />
+          <Route path="/research" element={
+            <ProtectedRoute>
+              <Index />
+            </ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <Index />
+            </ProtectedRoute>
+          } />
           <Route path="/portfolio/:id" element={
             <ProtectedRoute>
               <PortfolioDetail />
@@ -35,11 +65,6 @@ const App = () => (
           <Route path="/ticker/:symbol" element={
             <ProtectedRoute>
               <TickerDetail />
-            </ProtectedRoute>
-          } />
-          <Route path="/holdings" element={
-            <ProtectedRoute>
-              <Holdings />
             </ProtectedRoute>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
