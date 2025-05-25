@@ -121,6 +121,45 @@ export type Database = {
           },
         ]
       }
+      market_indices: {
+        Row: {
+          change_amount: number
+          change_percentage: number
+          created_at: string
+          currency: string
+          id: string
+          is_active: boolean
+          last_updated: string
+          name: string
+          price: number
+          symbol: string
+        }
+        Insert: {
+          change_amount?: number
+          change_percentage?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          last_updated?: string
+          name: string
+          price?: number
+          symbol: string
+        }
+        Update: {
+          change_amount?: number
+          change_percentage?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          last_updated?: string
+          name?: string
+          price?: number
+          symbol?: string
+        }
+        Relationships: []
+      }
       portfolios: {
         Row: {
           created_at: string
@@ -180,6 +219,54 @@ export type Database = {
           price?: number
           recorded_at?: string
           source?: string | null
+          symbol?: string
+        }
+        Relationships: []
+      }
+      ticker_data: {
+        Row: {
+          change_amount: number
+          change_percentage: number
+          created_at: string
+          currency: string
+          dividend_yield: number | null
+          id: string
+          is_active: boolean
+          is_halal: boolean | null
+          last_updated: string
+          market: string | null
+          name: string
+          price: number
+          symbol: string
+        }
+        Insert: {
+          change_amount?: number
+          change_percentage?: number
+          created_at?: string
+          currency?: string
+          dividend_yield?: number | null
+          id?: string
+          is_active?: boolean
+          is_halal?: boolean | null
+          last_updated?: string
+          market?: string | null
+          name: string
+          price?: number
+          symbol: string
+        }
+        Update: {
+          change_amount?: number
+          change_percentage?: number
+          created_at?: string
+          currency?: string
+          dividend_yield?: number | null
+          id?: string
+          is_active?: boolean
+          is_halal?: boolean | null
+          last_updated?: string
+          market?: string | null
+          name?: string
+          price?: number
           symbol?: string
         }
         Relationships: []

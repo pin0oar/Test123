@@ -2,47 +2,15 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useYahooFinance } from '@/hooks/useYahooFinance';
-import { TrendingUp, TrendingDown, Wifi, WifiOff, RefreshCw } from 'lucide-react';
-import { useEffect, useState } from 'react';
-
-interface MarketData {
-  symbol: string;
-  name: string;
-  price: number;
-  change: number;
-  changePercent: number;
-  currency: string;
-}
+import { useMarketData } from '@/hooks/useMarketData';
+import { TrendingUp, TrendingDown, Database, RefreshCw } from 'lucide-react';
 
 export const MarketOverview = () => {
   const { t } = useLanguage();
-  const { getMarketData, loading } = useYahooFinance();
-  const [markets, setMarkets] = useState<MarketData[]>([]);
-  const [isLiveData, setIsLiveData] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-
-  const fetchMarkets = async () => {
-    const marketData = await getMarketData();
-    setMarkets(marketData);
-    setLastUpdated(new Date());
-    
-    // Check if we got real data or fallback data
-    const isFallback = marketData.length === 3 && 
-      marketData.some(m => m.symbol === '^GSPC' && m.price === 4700);
-    
-    setIsLiveData(!isFallback);
-  };
-
-  useEffect(() => {
-    fetchMarkets();
-    // Refresh every 5 minutes
-    const interval = setInterval(fetchMarkets, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [getMarketData]);
+  const { markets, loading, lastUpdated, refreshMarketData } = useMarketData();
 
   const handleRefresh = () => {
-    fetchMarkets();
+    refreshMarketData();
   };
 
   const formatLastUpdated = (date: Date) => {
@@ -73,15 +41,9 @@ export const MarketOverview = () => {
         
         <div className="flex items-center space-x-2">
           <div className="flex items-center space-x-1">
-            {isLiveData ? (
-              <Wifi className="h-4 w-4 text-green-500" />
-            ) : (
-              <WifiOff className="h-4 w-4 text-orange-500" />
-            )}
-            <span className={`text-xs font-medium ${
-              isLiveData ? 'text-green-600' : 'text-orange-600'
-            }`}>
-              {isLiveData ? 'Live' : 'Demo'}
+            <Database className="h-4 w-4 text-blue-500" />
+            <span className="text-xs font-medium text-blue-600">
+              Database
             </span>
           </div>
           
@@ -146,7 +108,7 @@ export const MarketOverview = () => {
       
       <div className="flex items-center justify-between mt-4 text-xs text-gray-500 dark:text-gray-400">
         <span>
-          {isLiveData ? 'Data provided by Yahoo Finance' : 'Demo data - Yahoo Finance unavailable'}
+          Data from local database
         </span>
         {lastUpdated && (
           <span>
