@@ -24,30 +24,55 @@ export const useTickerData = (symbol: string | undefined) => {
       try {
         console.log('Fetching ticker data for:', symbol);
         
-        const { data, error } = await supabase
+        // First, try to get the ticker from tickers_data (with price information)
+        const { data: priceData, error: priceError } = await supabase
           .from('tickers_data')
           .select('*')
           .eq('symbol', symbol.toUpperCase())
           .eq('is_active', true)
           .single();
 
-        if (error) {
-          console.error('Error fetching ticker data:', error);
+        if (!priceError && priceData) {
+          console.log('Found ticker in tickers_data:', priceData);
+          setTickerData({
+            symbol: priceData.symbol,
+            name: priceData.name,
+            price: Number(priceData.price),
+            change_amount: Number(priceData.change_amount),
+            change_percentage: Number(priceData.change_percentage),
+            currency: priceData.currency,
+            last_updated: priceData.last_updated,
+            market: priceData.market
+          });
           return;
         }
 
-        if (data) {
+        // If not found in tickers_data, check tracked_tickers for market information
+        console.log('Ticker not found in tickers_data, checking tracked_tickers...');
+        const { data: trackedData, error: trackedError } = await supabase
+          .from('tracked_tickers')
+          .select('*')
+          .eq('symbol', symbol.toUpperCase())
+          .eq('is_active', true)
+          .single();
+
+        if (!trackedError && trackedData) {
+          console.log('Found ticker in tracked_tickers:', trackedData);
+          // Return basic ticker info from tracked_tickers without price data
           setTickerData({
-            symbol: data.symbol,
-            name: data.name,
-            price: Number(data.price),
-            change_amount: Number(data.change_amount),
-            change_percentage: Number(data.change_percentage),
-            currency: data.currency,
-            last_updated: data.last_updated,
-            market: data.market
+            symbol: trackedData.symbol,
+            name: trackedData.name,
+            price: 0,
+            change_amount: 0,
+            change_percentage: 0,
+            currency: trackedData.currency,
+            last_updated: new Date().toISOString(),
+            market: trackedData.market
           });
+          return;
         }
+
+        console.log('Ticker not found in either table');
       } catch (error) {
         console.error('Error:', error);
       } finally {
