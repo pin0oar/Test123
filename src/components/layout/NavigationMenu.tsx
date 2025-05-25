@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage';
-import { BarChart3, Wallet, Calculator, TrendingUp, Book, Settings } from 'lucide-react';
+import { BarChart3, Wallet, Calculator, TrendingUp, Book, Settings, PieChart } from 'lucide-react';
 
 interface NavigationMenuProps {
   isMobile?: boolean;
@@ -13,6 +13,7 @@ export const NavigationMenu = ({ isMobile = false }: NavigationMenuProps) => {
   const menuItems = [
     { icon: BarChart3, label: t('dashboard'), href: '/' },
     { icon: Wallet, label: t('portfolios'), href: '/portfolios' },
+    { icon: PieChart, label: t('holdings'), href: '/holdings' },
     { icon: TrendingUp, label: t('dividends'), href: '/dividends' },
     { icon: Calculator, label: t('zakat'), href: '/zakat' },
     { icon: Book, label: t('research'), href: '/research' },

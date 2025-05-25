@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import PortfolioDetail from "./pages/PortfolioDetail";
 import TickerDetail from "./pages/TickerDetail";
+import Holdings from "./pages/Holdings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,11 @@ const App = () => (
           <Route path="/ticker/:symbol" element={
             <ProtectedRoute>
               <TickerDetail />
+            </ProtectedRoute>
+          } />
+          <Route path="/holdings" element={
+            <ProtectedRoute>
+              <Holdings />
             </ProtectedRoute>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
