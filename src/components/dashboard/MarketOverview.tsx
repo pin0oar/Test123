@@ -1,8 +1,9 @@
 
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useYahooFinance } from '@/hooks/useYahooFinance';
-import { TrendingUp, TrendingDown, Wifi, WifiOff } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface MarketData {
@@ -19,25 +20,38 @@ export const MarketOverview = () => {
   const { getMarketData, loading } = useYahooFinance();
   const [markets, setMarkets] = useState<MarketData[]>([]);
   const [isLiveData, setIsLiveData] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  const fetchMarkets = async () => {
+    const marketData = await getMarketData();
+    setMarkets(marketData);
+    setLastUpdated(new Date());
+    
+    // Check if we got real data or fallback data
+    const isFallback = marketData.length === 3 && 
+      marketData.some(m => m.symbol === '^GSPC' && m.price === 4700);
+    
+    setIsLiveData(!isFallback);
+  };
 
   useEffect(() => {
-    const fetchMarkets = async () => {
-      const marketData = await getMarketData();
-      setMarkets(marketData);
-      
-      // Check if we got real data or fallback data
-      // If we get exactly 3 items with specific values, it's likely fallback data
-      const isFallback = marketData.length === 3 && 
-        marketData.some(m => m.symbol === '^GSPC' && m.price === 4700);
-      
-      setIsLiveData(!isFallback);
-    };
-
     fetchMarkets();
     // Refresh every 5 minutes
     const interval = setInterval(fetchMarkets, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [getMarketData]);
+
+  const handleRefresh = () => {
+    fetchMarkets();
+  };
+
+  const formatLastUpdated = (date: Date) => {
+    return date.toLocaleTimeString(undefined, { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
 
   return (
     <Card className="p-6">
@@ -46,17 +60,29 @@ export const MarketOverview = () => {
           {t('marketOverview')}
         </h3>
         
-        <div className="flex items-center space-x-1">
-          {isLiveData ? (
-            <Wifi className="h-4 w-4 text-green-500" />
-          ) : (
-            <WifiOff className="h-4 w-4 text-orange-500" />
-          )}
-          <span className={`text-xs font-medium ${
-            isLiveData ? 'text-green-600' : 'text-orange-600'
-          }`}>
-            {isLiveData ? 'Live' : 'Demo'}
-          </span>
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
+            {isLiveData ? (
+              <Wifi className="h-4 w-4 text-green-500" />
+            ) : (
+              <WifiOff className="h-4 w-4 text-orange-500" />
+            )}
+            <span className={`text-xs font-medium ${
+              isLiveData ? 'text-green-600' : 'text-orange-600'
+            }`}>
+              {isLiveData ? 'Live' : 'Demo'}
+            </span>
+          </div>
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={loading}
+            className="h-8 w-8"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
       </div>
       
@@ -107,9 +133,16 @@ export const MarketOverview = () => {
         </div>
       )}
       
-      <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
-        {isLiveData ? 'Data provided by Yahoo Finance' : 'Demo data - Yahoo Finance unavailable'} • Updated every 5 minutes
-      </p>
+      <div className="flex items-center justify-between mt-4 text-xs text-gray-500 dark:text-gray-400">
+        <span>
+          {isLiveData ? 'Data provided by Yahoo Finance' : 'Demo data - Yahoo Finance unavailable'}
+        </span>
+        {lastUpdated && (
+          <span>
+            Updated: {formatLastUpdated(lastUpdated)}
+          </span>
+        )}
+      </div>
     </Card>
   );
 };
