@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useMarketData } from '@/hooks/useMarketData';
 import { useDataSync } from '@/hooks/useDataSync';
-import { useTwelveData } from '@/hooks/useTwelveData';
-import { TrendingUp, TrendingDown, Database, RefreshCw, Download, AlertTriangle, Search } from 'lucide-react';
+import { useYahooFinance } from '@/hooks/useYahooFinance';
+import { TrendingUp, TrendingDown, Database, RefreshCw, Download, AlertTriangle } from 'lucide-react';
 
 export const MarketOverview = () => {
   const { t } = useLanguage();
   const { markets, loading, lastUpdated, refreshMarketData } = useMarketData();
   const { syncIndicesData, syncing } = useDataSync();
-  const { testSymbolAvailability, loading: testingSymbols } = useTwelveData();
+  const { loading: yahooLoading } = useYahooFinance();
 
   const handleRefresh = () => {
     refreshMarketData();
@@ -24,14 +24,6 @@ export const MarketOverview = () => {
       refreshMarketData();
     } catch (error) {
       console.error('Sync failed:', error);
-    }
-  };
-
-  const handleTestSymbols = async () => {
-    try {
-      await testSymbolAvailability();
-    } catch (error) {
-      console.error('Symbol test failed:', error);
     }
   };
 
@@ -77,7 +69,7 @@ export const MarketOverview = () => {
           <div className="flex items-center space-x-1">
             <Database className="h-4 w-4 text-blue-500" />
             <span className="text-xs font-medium text-blue-600">
-              Twelve Data
+              Yahoo Finance
             </span>
           </div>
           
@@ -93,21 +85,10 @@ export const MarketOverview = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleTestSymbols}
-            disabled={testingSymbols}
-            className="h-8 w-8"
-            title="Test symbol availability"
-          >
-            <Search className={`h-4 w-4 ${testingSymbols ? 'animate-spin' : ''}`} />
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="icon"
             onClick={handleSync}
             disabled={syncing}
             className="h-8 w-8"
-            title="Sync from Twelve Data"
+            title="Sync from Yahoo Finance"
           >
             <Download className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
           </Button>
@@ -125,11 +106,10 @@ export const MarketOverview = () => {
         </div>
       </div>
       
-      {(loading && markets.length === 0) || syncing || testingSymbols ? (
+      {(loading && markets.length === 0) || syncing ? (
         <div className="text-center py-4">
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            {testingSymbols ? 'Testing symbol availability...' : 
-             syncing ? 'Syncing from Twelve Data...' : 'Loading market data...'}
+            {syncing ? 'Syncing from Yahoo Finance...' : 'Loading market data...'}
           </div>
         </div>
       ) : markets.length === 0 ? (
@@ -138,18 +118,9 @@ export const MarketOverview = () => {
             No market data available
           </div>
           <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Click the test button to check symbol availability or sync to fetch data
+            Click the sync button to fetch data from Yahoo Finance
           </div>
           <div className="flex justify-center space-x-2 mt-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleTestSymbols}
-              disabled={testingSymbols}
-            >
-              <Search className="h-4 w-4 mr-2" />
-              Test Symbols
-            </Button>
             <Button 
               variant="outline" 
               size="sm" 
@@ -213,7 +184,7 @@ export const MarketOverview = () => {
       
       <div className="flex items-center justify-between mt-4 text-xs text-gray-500 dark:text-gray-400">
         <span>
-          {isUsingFallbackData ? 'Fallback data' : 'Data from Twelve Data'}
+          {isUsingFallbackData ? 'Fallback data' : 'Data from Yahoo Finance'}
         </span>
         {lastUpdated && (
           <span>
