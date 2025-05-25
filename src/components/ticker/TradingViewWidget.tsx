@@ -33,7 +33,7 @@ export const TradingViewWidget = ({ symbol, market }: TradingViewWidgetProps) =>
       "height": 800,
       "colorTheme": "dark",
       "symbol": formattedSymbol,
-      "locale": "ar"
+      "locale": "ar_AE"
     });
 
     const widgetContainer = document.getElementById('tradingview-widget');
