@@ -14,7 +14,7 @@ export const TradingViewWidget = ({ symbol, market }: TradingViewWidgetProps) =>
     // Format symbol based on market
     let formattedSymbol = symbol;
     
-    if ( market && market.includes('Saudi')) {
+    if (market && market.includes('Saudi')) {
       // Remove anything after digits and add TADAWUL prefix
       const cleanSymbol = symbol.replace(/[^0-9]/g, '');
       formattedSymbol = `TADAWUL:${cleanSymbol}`;
@@ -33,7 +33,7 @@ export const TradingViewWidget = ({ symbol, market }: TradingViewWidgetProps) =>
       "height": 800,
       "colorTheme": "light",
       "symbol": formattedSymbol,
-      "locale": "ar_AE"
+      "locale": "ar"
     });
 
     const widgetContainer = document.getElementById('tradingview-widget');
