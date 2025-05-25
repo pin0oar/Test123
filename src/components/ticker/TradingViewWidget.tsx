@@ -30,7 +30,7 @@ export const TradingViewWidget = ({ symbol, market }: TradingViewWidgetProps) =>
       "largeChartUrl": "",
       "displayMode": "regular",
       "width": "100%",
-      "height": "100%",
+      "height": 800,
       "colorTheme": "dark",
       "symbol": formattedSymbol,
       "locale": "ar"
