@@ -121,7 +121,7 @@ export type Database = {
           },
         ]
       }
-      market_indices: {
+      indices_data: {
         Row: {
           change_amount: number
           change_percentage: number
@@ -133,6 +133,7 @@ export type Database = {
           name: string
           price: number
           symbol: string
+          tracked_index_id: string | null
         }
         Insert: {
           change_amount?: number
@@ -145,6 +146,7 @@ export type Database = {
           name: string
           price?: number
           symbol: string
+          tracked_index_id?: string | null
         }
         Update: {
           change_amount?: number
@@ -157,8 +159,17 @@ export type Database = {
           name?: string
           price?: number
           symbol?: string
+          tracked_index_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "indices_data_tracked_index_id_fkey"
+            columns: ["tracked_index_id"]
+            isOneToOne: false
+            referencedRelation: "tracked_indices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       portfolios: {
         Row: {
@@ -223,7 +234,7 @@ export type Database = {
         }
         Relationships: []
       }
-      ticker_data: {
+      tickers_data: {
         Row: {
           change_amount: number
           change_percentage: number
@@ -238,6 +249,7 @@ export type Database = {
           name: string
           price: number
           symbol: string
+          tracked_ticker_id: string | null
         }
         Insert: {
           change_amount?: number
@@ -253,6 +265,7 @@ export type Database = {
           name: string
           price?: number
           symbol: string
+          tracked_ticker_id?: string | null
         }
         Update: {
           change_amount?: number
@@ -268,6 +281,78 @@ export type Database = {
           name?: string
           price?: number
           symbol?: string
+          tracked_ticker_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickers_data_tracked_ticker_id_fkey"
+            columns: ["tracked_ticker_id"]
+            isOneToOne: false
+            referencedRelation: "tracked_tickers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tracked_indices: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          is_active: boolean
+          name: string
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          symbol?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tracked_tickers: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          is_active: boolean
+          market: string | null
+          name: string
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          market?: string | null
+          name: string
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          market?: string | null
+          name?: string
+          symbol?: string
+          updated_at?: string
         }
         Relationships: []
       }

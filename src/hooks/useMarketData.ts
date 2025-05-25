@@ -25,7 +25,7 @@ export const useMarketData = () => {
       console.log('Fetching market data from database...');
       
       const { data, error } = await supabase
-        .from('market_indices')
+        .from('indices_data')
         .select('symbol, name, price, change_amount, change_percentage, currency, last_updated')
         .eq('is_active', true)
         .order('symbol');
