@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/useLanguage';
 import { formatCurrency } from '@/utils/formatters';
 import { Portfolio } from '@/types/portfolio';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Package } from 'lucide-react';
 
 interface PortfolioHoldingsProps {
   portfolio: Portfolio;
@@ -46,9 +46,17 @@ export const PortfolioHoldings = ({ portfolio }: PortfolioHoldingsProps) => {
                   </span>
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">
-                    {holding.symbol}
-                  </h4>
+                  <div className="flex items-center space-x-2">
+                    <h4 className="font-medium text-gray-900 dark:text-white">
+                      {holding.symbol}
+                    </h4>
+                    <div className="flex items-center space-x-1">
+                      <Package className="h-3 w-3 text-gray-500" />
+                      <span className="text-xs text-gray-500 dark:text-gray-500 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
+                        {holding.lotId}
+                      </span>
+                    </div>
+                  </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {holding.name}
                   </p>

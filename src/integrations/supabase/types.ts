@@ -9,7 +9,222 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      dividend_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          ex_date: string
+          holding_id: string
+          id: string
+          is_projected: boolean | null
+          pay_date: string
+          symbol: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          ex_date: string
+          holding_id: string
+          id?: string
+          is_projected?: boolean | null
+          pay_date: string
+          symbol: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          ex_date?: string
+          holding_id?: string
+          id?: string
+          is_projected?: boolean | null
+          pay_date?: string
+          symbol?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dividend_payments_holding_id_fkey"
+            columns: ["holding_id"]
+            isOneToOne: false
+            referencedRelation: "holdings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      holdings: {
+        Row: {
+          avg_price: number
+          created_at: string
+          currency: string
+          current_price: number
+          dividend_yield: number | null
+          id: string
+          is_halal: boolean | null
+          lot_id: string
+          market: string
+          name: string
+          pnl: number
+          pnl_percentage: number
+          portfolio_id: string
+          quantity: number
+          symbol: string
+          total_value: number
+          updated_at: string
+        }
+        Insert: {
+          avg_price: number
+          created_at?: string
+          currency?: string
+          current_price: number
+          dividend_yield?: number | null
+          id?: string
+          is_halal?: boolean | null
+          lot_id?: string
+          market: string
+          name: string
+          pnl: number
+          pnl_percentage: number
+          portfolio_id: string
+          quantity: number
+          symbol: string
+          total_value: number
+          updated_at?: string
+        }
+        Update: {
+          avg_price?: number
+          created_at?: string
+          currency?: string
+          current_price?: number
+          dividend_yield?: number | null
+          id?: string
+          is_halal?: boolean | null
+          lot_id?: string
+          market?: string
+          name?: string
+          pnl?: number
+          pnl_percentage?: number
+          portfolio_id?: string
+          quantity?: number
+          symbol?: string
+          total_value?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "holdings_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portfolios: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          total_pnl: number | null
+          total_pnl_percentage: number | null
+          total_value: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          total_pnl?: number | null
+          total_pnl_percentage?: number | null
+          total_value?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          total_pnl?: number | null
+          total_pnl_percentage?: number | null
+          total_value?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      price_history: {
+        Row: {
+          currency: string
+          id: string
+          price: number
+          recorded_at: string
+          source: string | null
+          symbol: string
+        }
+        Insert: {
+          currency?: string
+          id?: string
+          price: number
+          recorded_at?: string
+          source?: string | null
+          symbol: string
+        }
+        Update: {
+          currency?: string
+          id?: string
+          price?: number
+          recorded_at?: string
+          source?: string | null
+          symbol?: string
+        }
+        Relationships: []
+      }
+      zakat_calculations: {
+        Row: {
+          calculation_date: string
+          created_at: string
+          id: string
+          portfolio_id: string
+          total_value: number
+          zakat_due: number
+          zakat_rate: number
+          zakatable_amount: number
+        }
+        Insert: {
+          calculation_date?: string
+          created_at?: string
+          id?: string
+          portfolio_id: string
+          total_value: number
+          zakat_due: number
+          zakat_rate?: number
+          zakatable_amount: number
+        }
+        Update: {
+          calculation_date?: string
+          created_at?: string
+          id?: string
+          portfolio_id?: string
+          total_value?: number
+          zakat_due?: number
+          zakat_rate?: number
+          zakatable_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zakat_calculations_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -4,6 +4,7 @@ export interface Holding {
   symbol: string;
   name: string;
   market: string; // TADAWUL, NYSE, NASDAQ, etc.
+  lotId: string; // New field to support multiple lots of the same stock
   quantity: number;
   avgPrice: number;
   currentPrice: number;
@@ -13,6 +14,7 @@ export interface Holding {
   currency: string;
   isHalal: boolean;
   dividendYield: number;
+  createdAt: Date;
   lastUpdated: Date;
 }
 
@@ -46,4 +48,13 @@ export interface ZakatCalculation {
   zakatDue: number;
   zakatRate: number; // Usually 2.5%
   calculationDate: Date;
+}
+
+export interface PriceHistory {
+  id: string;
+  symbol: string;
+  price: number;
+  currency: string;
+  recordedAt: Date;
+  source: string;
 }
