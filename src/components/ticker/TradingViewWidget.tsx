@@ -14,7 +14,7 @@ export const TradingViewWidget = ({ symbol, market }: TradingViewWidgetProps) =>
     // Format symbol based on market
     let formattedSymbol = symbol;
     
-    if (market === 'Saudi Stock Exchange') {
+    if (market.includes('Saudi') {
       // Remove anything after digits and add TADAWUL prefix
       const cleanSymbol = symbol.replace(/[^0-9]/g, '');
       formattedSymbol = `TADAWUL:${cleanSymbol}`;
@@ -26,12 +26,12 @@ export const TradingViewWidget = ({ symbol, market }: TradingViewWidgetProps) =>
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-financials.js';
     script.async = true;
     script.innerHTML = JSON.stringify({
-      "isTransparent": false,
+      "isTransparent": true,
       "largeChartUrl": "",
-      "displayMode": "regular",
+      "displayMode": "adaptive",
       "width": "100%",
       "height": 800,
-      "colorTheme": "dark",
+      "colorTheme": "light",
       "symbol": formattedSymbol,
       "locale": "ar_AE"
     });
