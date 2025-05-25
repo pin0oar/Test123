@@ -21,7 +21,7 @@ export const TradingViewWidget = ({ symbol }: TradingViewWidgetProps) => {
       "height": 550,
       "colorTheme": "dark",
       "symbol": `NASDAQ:${symbol}`,
-      "locale": "en"
+      "locale": "ar"
     });
 
     const widgetContainer = document.getElementById('tradingview-widget');
