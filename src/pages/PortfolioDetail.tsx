@@ -7,12 +7,13 @@ import { PortfolioHoldings } from '@/components/portfolio/PortfolioHoldings';
 import { MarketOverview } from '@/components/dashboard/MarketOverview';
 import { PortfolioActivity } from '@/components/portfolio/PortfolioActivity';
 import { PortfolioNews } from '@/components/portfolio/PortfolioNews';
+import { PortfolioQuickActions } from '@/components/portfolio/PortfolioQuickActions';
 import { usePortfolios } from '@/hooks/usePortfolios';
 import { useLanguage } from '@/hooks/useLanguage';
 
 const PortfolioDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { portfolios } = usePortfolios();
+  const { portfolios, refetch } = usePortfolios();
   const { t } = useLanguage();
   
   const portfolio = portfolios.find(p => p.id === id);
@@ -31,6 +32,10 @@ const PortfolioDetail = () => {
       </div>
     );
   }
+
+  const handleHoldingAdded = () => {
+    refetch();
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -52,6 +57,10 @@ const PortfolioDetail = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            <PortfolioQuickActions 
+              portfolio={portfolio}
+              onHoldingAdded={handleHoldingAdded}
+            />
             <MarketOverview />
             <PortfolioActivity portfolio={portfolio} />
           </div>
