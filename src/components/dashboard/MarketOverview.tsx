@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useMarketData } from '@/hooks/useMarketData';
 import { useDataSync } from '@/hooks/useDataSync';
-import { useYahooFinance } from '@/hooks/useYahooFinance';
+import { useEODHD } from '@/hooks/useEODHD';
 import { TrendingUp, TrendingDown, Database, RefreshCw, Download, AlertTriangle } from 'lucide-react';
 
 export const MarketOverview = () => {
   const { t } = useLanguage();
   const { markets, loading, lastUpdated, refreshMarketData } = useMarketData();
   const { syncIndicesData, syncing } = useDataSync();
-  const { loading: yahooLoading } = useYahooFinance();
+  const { loading: eodhLoading } = useEODHD();
 
   const handleRefresh = () => {
     refreshMarketData();
@@ -69,7 +69,7 @@ export const MarketOverview = () => {
           <div className="flex items-center space-x-1">
             <Database className="h-4 w-4 text-blue-500" />
             <span className="text-xs font-medium text-blue-600">
-              Yahoo Finance
+              EODHD
             </span>
           </div>
           
@@ -88,7 +88,7 @@ export const MarketOverview = () => {
             onClick={handleSync}
             disabled={syncing}
             className="h-8 w-8"
-            title="Sync from Yahoo Finance"
+            title="Sync from EODHD"
           >
             <Download className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
           </Button>
@@ -109,7 +109,7 @@ export const MarketOverview = () => {
       {(loading && markets.length === 0) || syncing ? (
         <div className="text-center py-4">
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            {syncing ? 'Syncing from Yahoo Finance...' : 'Loading market data...'}
+            {syncing ? 'Syncing from EODHD...' : 'Loading market data...'}
           </div>
         </div>
       ) : markets.length === 0 ? (
@@ -118,7 +118,7 @@ export const MarketOverview = () => {
             No market data available
           </div>
           <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Click the sync button to fetch data from Yahoo Finance
+            Click the sync button to fetch data from EODHD
           </div>
           <div className="flex justify-center space-x-2 mt-2">
             <Button 
@@ -184,7 +184,7 @@ export const MarketOverview = () => {
       
       <div className="flex items-center justify-between mt-4 text-xs text-gray-500 dark:text-gray-400">
         <span>
-          {isUsingFallbackData ? 'Fallback data' : 'Data from Yahoo Finance'}
+          {isUsingFallbackData ? 'Fallback data' : 'Data from EODHD'}
         </span>
         {lastUpdated && (
           <span>

@@ -1,22 +1,22 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useYahooFinance } from './useYahooFinance';
+import { useEODHD } from './useEODHD';
 import { useToast } from '@/hooks/use-toast';
 
-// Mapping from our tracked symbols to Yahoo Finance symbols
+// Mapping from our tracked symbols to EODHD symbols
 const SYMBOL_MAPPING: Record<string, string> = {
-  'SPX': '^GSPC',
-  'IXIC': '^IXIC', 
-  'DJI': '^DJI',
-  'UKX': '^FTSE',
-  'DAX': '^GDAXI',
-  'TASI': 'TASI.SA'
+  'SPX': 'GSPC.INDX',
+  'IXIC': 'IXIC.INDX', 
+  'DJI': 'DJI.INDX',
+  'UKX': 'FTSE.INDX',
+  'DAX': 'GDAXI.INDX',
+  'TASI': 'TASI.INDX'
 };
 
 export const useDataSync = () => {
   const [syncing, setSyncing] = useState(false);
-  const { getMarketData } = useYahooFinance();
+  const { getMarketData } = useEODHD();
   const { toast } = useToast();
 
   const autoAddTicker = async (symbol: string, name: string, market?: string, currency: string = 'USD') => {
@@ -46,7 +46,7 @@ export const useDataSync = () => {
   const syncIndicesData = async () => {
     try {
       setSyncing(true);
-      console.log('Starting indices data sync using Yahoo Finance...');
+      console.log('Starting indices data sync using EODHD...');
 
       // 1. Get all active tracked indices
       const { data: trackedIndices, error: fetchError } = await supabase
@@ -66,30 +66,30 @@ export const useDataSync = () => {
 
       console.log('Found tracked indices:', trackedIndices);
 
-      // 2. Fetch data from Yahoo Finance
+      // 2. Fetch data from EODHD
       const marketData = await getMarketData();
-      console.log('Market data from Yahoo Finance:', marketData);
+      console.log('Market data from EODHD:', marketData);
 
       if (!marketData || marketData.length === 0) {
-        throw new Error('No market data received from Yahoo Finance');
+        throw new Error('No market data received from EODHD');
       }
 
       // 3. Process and update indices_data table
       const updates = [];
       
       for (const trackedIndex of trackedIndices) {
-        const yahooSymbol = SYMBOL_MAPPING[trackedIndex.symbol] || trackedIndex.symbol;
-        let yahooData = marketData.find(data => 
-          data.symbol === yahooSymbol || data.symbol === trackedIndex.symbol
+        const eodhSymbol = SYMBOL_MAPPING[trackedIndex.symbol] || trackedIndex.symbol;
+        let eodhData = marketData.find(data => 
+          data.symbol === trackedIndex.symbol || data.symbol === eodhSymbol.replace('.INDX', '')
         );
 
-        if (yahooData) {
+        if (eodhData) {
           const updateData = {
             symbol: trackedIndex.symbol,
             name: trackedIndex.name,
-            price: yahooData.price,
-            change_amount: yahooData.change,
-            change_percentage: yahooData.changePercent,
+            price: eodhData.price,
+            change_amount: eodhData.change,
+            change_percentage: eodhData.changePercent,
             currency: trackedIndex.currency,
             last_updated: new Date().toISOString(),
             is_active: true,
@@ -118,11 +118,11 @@ export const useDataSync = () => {
         throw upsertError;
       }
 
-      console.log(`Successfully synced ${updates.length} indices from Yahoo Finance`);
+      console.log(`Successfully synced ${updates.length} indices from EODHD`);
       
       toast({
         title: 'Success',
-        description: `Synced ${updates.length} market indices from Yahoo Finance`,
+        description: `Synced ${updates.length} market indices from EODHD`,
       });
 
       return updates.length;
