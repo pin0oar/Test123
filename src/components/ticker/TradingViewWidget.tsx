@@ -11,13 +11,23 @@ export const TradingViewWidget = ({ symbol, market }: TradingViewWidgetProps) =>
   useEffect(() => {
     if (!symbol) return;
 
+    console.log('TradingViewWidget - symbol:', symbol);
+    console.log('TradingViewWidget - market:', market);
+
     // Format symbol based on market
     let formattedSymbol = symbol;
     
-    if (market && market.includes('Saudi')) {
+    // Check if it's a Saudi stock - either by market info or symbol format
+    const isSaudiStock = (market && market.includes('Saudi')) || symbol.includes('.SR');
+    
+    console.log('TradingViewWidget - isSaudiStock:', isSaudiStock);
+    
+    if (isSaudiStock) {
       // Remove anything after digits and add TADAWUL prefix
       const cleanSymbol = symbol.replace(/[^0-9]/g, '');
       formattedSymbol = `TADAWUL:${cleanSymbol}`;
+      console.log('TradingViewWidget - cleanSymbol:', cleanSymbol);
+      console.log('TradingViewWidget - formattedSymbol:', formattedSymbol);
     } else {
       formattedSymbol = `NASDAQ:${symbol}`;
     }
