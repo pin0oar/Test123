@@ -1,29 +1,38 @@
+
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useMarketData } from '@/hooks/useMarketData';
-import { useDataSync } from '@/hooks/useDataSync';
 import { useFinnhub } from '@/hooks/useFinnhub';
 import { TrendingUp, TrendingDown, Database, RefreshCw, Download, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export const MarketOverview = () => {
   const { t } = useLanguage();
-  const { markets, loading, lastUpdated, refreshMarketData } = useMarketData();
-  const { syncIndicesData, syncing } = useDataSync();
-  const { loading: finnhubLoading } = useFinnhub();
+  const { getQuotes, loading } = useFinnhub();
+  const [tickers, setTickers] = useState<any[]>([]);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const handleRefresh = () => {
-    refreshMarketData();
+  // Sample tickers to test with
+  const testSymbols = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'NVDA'];
+
+  const fetchTickerData = async () => {
+    try {
+      console.log('Fetching ticker data from Finnhub...');
+      const quotes = await getQuotes(testSymbols);
+      console.log('Received ticker quotes:', quotes);
+      setTickers(quotes);
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error('Error fetching ticker data:', error);
+    }
   };
 
-  const handleSync = async () => {
-    try {
-      await syncIndicesData();
-      // Refresh the local data after sync
-      refreshMarketData();
-    } catch (error) {
-      console.error('Sync failed:', error);
-    }
+  useEffect(() => {
+    fetchTickerData();
+  }, []);
+
+  const handleRefresh = () => {
+    fetchTickerData();
   };
 
   const formatDateTime = (date: Date) => {
@@ -52,16 +61,16 @@ export const MarketOverview = () => {
     }
   };
 
-  // Check if we're using fallback data by seeing if all changes are rounded numbers
-  const isUsingFallbackData = markets.some(market => 
-    market.change === 0 || (market.change % 1 === 0 && market.changePercent % 0.1 === 0)
+  // Check if we're using fallback data
+  const isUsingFallbackData = tickers.some(ticker => 
+    ticker.regularMarketPrice === 0 || (ticker.regularMarketPrice && ticker.regularMarketPrice % 1 === 0)
   );
 
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          {t('marketOverview')}
+          Ticker Overview (Test)
         </h3>
         
         <div className="flex items-center space-x-2">
@@ -84,76 +93,62 @@ export const MarketOverview = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleSync}
-            disabled={syncing}
-            className="h-8 w-8"
-            title="Sync from Finnhub"
-          >
-            <Download className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="icon"
             onClick={handleRefresh}
             disabled={loading}
             className="h-8 w-8"
-            title="Refresh from database"
+            title="Refresh ticker data"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>
       
-      {(loading && markets.length === 0) || syncing ? (
+      {loading && tickers.length === 0 ? (
         <div className="text-center py-4">
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            {syncing ? 'Syncing from Finnhub...' : 'Loading market data...'}
+            Loading ticker data...
           </div>
         </div>
-      ) : markets.length === 0 ? (
+      ) : tickers.length === 0 ? (
         <div className="text-center py-8">
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            No market data available
+            No ticker data available
           </div>
           <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Click the sync button to fetch data from Finnhub
+            Click refresh to fetch data from Finnhub
           </div>
           <div className="flex justify-center space-x-2 mt-2">
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={handleSync}
-              disabled={syncing}
+              onClick={handleRefresh}
+              disabled={loading}
             >
               <Download className="h-4 w-4 mr-2" />
-              Sync Data
+              Fetch Data
             </Button>
           </div>
         </div>
       ) : (
         <div className="space-y-4">
-          {markets.map((market) => {
-            const isPositive = market.change >= 0;
-            const marketLastUpdated = market.lastUpdated ? new Date(market.lastUpdated) : null;
+          {tickers.map((ticker) => {
+            const isPositive = ticker.regularMarketChange >= 0;
             
             return (
-              <div key={market.symbol} className="flex items-center justify-between">
+              <div key={ticker.symbol} className="flex items-center justify-between">
                 <div>
                   <h4 className="font-medium text-gray-900 dark:text-white text-sm">
-                    {market.name}
+                    {ticker.symbol}
                   </h4>
                   <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {market.price.toLocaleString(undefined, { 
+                    ${ticker.regularMarketPrice.toLocaleString(undefined, { 
                       minimumFractionDigits: 2, 
                       maximumFractionDigits: 2 
                     })}
                   </p>
-                  {marketLastUpdated && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {formatDateTime(marketLastUpdated)}
-                    </p>
-                  )}
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {ticker.shortName || ticker.longName}
+                  </p>
                 </div>
                 
                 <div className="text-right">
@@ -166,13 +161,13 @@ export const MarketOverview = () => {
                     <span className={`text-sm font-medium ${
                       isPositive ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      {isPositive ? '+' : ''}{market.changePercent.toFixed(2)}%
+                      {isPositive ? '+' : ''}{ticker.regularMarketChangePercent.toFixed(2)}%
                     </span>
                   </div>
                   <p className={`text-xs ${
                     isPositive ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    {isPositive ? '+' : ''}{market.change.toFixed(2)}
+                    {isPositive ? '+' : ''}${ticker.regularMarketChange.toFixed(2)}
                   </p>
                 </div>
               </div>
