@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useYahooFinance } from '@/hooks/useYahooFinance';
-import { debounce } from 'lodash-es';
+import { debounce } from '@/utils/debounce';
 
 interface TickerSearchProps {
   value?: string;
