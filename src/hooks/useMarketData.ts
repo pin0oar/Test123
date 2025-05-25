@@ -35,19 +35,29 @@ export const useMarketData = () => {
         throw error;
       }
 
+      console.log('Raw data from database:', data);
+
+      if (!data || data.length === 0) {
+        console.log('No market data found in database');
+        setMarkets([]);
+        setLastUpdated(new Date());
+        return;
+      }
+
       const marketData: MarketData[] = data.map(item => ({
         symbol: item.symbol,
         name: item.name,
-        price: Number(item.price),
-        change: Number(item.change_amount),
-        changePercent: Number(item.change_percentage),
-        currency: item.currency,
+        price: Number(item.price) || 0,
+        change: Number(item.change_amount) || 0,
+        changePercent: Number(item.change_percentage) || 0,
+        currency: item.currency || 'USD',
         lastUpdated: item.last_updated
       }));
 
+      console.log('Processed market data:', marketData);
       setMarkets(marketData);
       setLastUpdated(new Date());
-      console.log('Market data fetched successfully:', marketData);
+      
     } catch (error) {
       console.error('Error fetching market data:', error);
       toast({
@@ -55,6 +65,7 @@ export const useMarketData = () => {
         description: 'Failed to fetch market data from database',
         variant: 'destructive'
       });
+      // Don't clear markets on error to maintain existing data
     } finally {
       setLoading(false);
     }
@@ -62,8 +73,8 @@ export const useMarketData = () => {
 
   useEffect(() => {
     fetchMarketData();
-    // Refresh every 10 minutes (since data comes from DB, we can refresh more frequently)
-    const interval = setInterval(fetchMarketData, 10 * 60 * 1000);
+    // Refresh every 5 minutes from database
+    const interval = setInterval(fetchMarketData, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 

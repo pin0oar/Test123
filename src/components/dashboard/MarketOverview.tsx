@@ -3,14 +3,26 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useMarketData } from '@/hooks/useMarketData';
-import { TrendingUp, TrendingDown, Database, RefreshCw } from 'lucide-react';
+import { useDataSync } from '@/hooks/useDataSync';
+import { TrendingUp, TrendingDown, Database, RefreshCw, Download } from 'lucide-react';
 
 export const MarketOverview = () => {
   const { t } = useLanguage();
   const { markets, loading, lastUpdated, refreshMarketData } = useMarketData();
+  const { syncIndicesData, syncing } = useDataSync();
 
   const handleRefresh = () => {
     refreshMarketData();
+  };
+
+  const handleSync = async () => {
+    try {
+      await syncIndicesData();
+      // Refresh the local data after sync
+      refreshMarketData();
+    } catch (error) {
+      console.error('Sync failed:', error);
+    }
   };
 
   const formatLastUpdated = (date: Date) => {
@@ -32,17 +44,6 @@ export const MarketOverview = () => {
     }
   };
 
-  const formatDataTimestamp = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
@@ -61,18 +62,32 @@ export const MarketOverview = () => {
           <Button
             variant="ghost"
             size="icon"
+            onClick={handleSync}
+            disabled={syncing}
+            className="h-8 w-8"
+            title="Sync from Yahoo Finance"
+          >
+            <Download className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={handleRefresh}
             disabled={loading}
             className="h-8 w-8"
+            title="Refresh from database"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>
       
-      {loading && markets.length === 0 ? (
+      {(loading && markets.length === 0) || syncing ? (
         <div className="text-center py-4">
-          <div className="text-sm text-gray-500 dark:text-gray-400">Loading market data...</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            {syncing ? 'Syncing from Yahoo Finance...' : 'Loading market data...'}
+          </div>
         </div>
       ) : markets.length === 0 ? (
         <div className="text-center py-8">
@@ -80,8 +95,18 @@ export const MarketOverview = () => {
             No market data available
           </div>
           <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Market indices data will appear here when available
+            Click the sync button to fetch data from Yahoo Finance
           </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleSync}
+            disabled={syncing}
+            className="mt-2"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Sync Data
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">
@@ -128,11 +153,11 @@ export const MarketOverview = () => {
       
       <div className="flex items-center justify-between mt-4 text-xs text-gray-500 dark:text-gray-400">
         <span>
-          Data from local database
+          Data from Yahoo Finance
         </span>
         {lastUpdated && (
           <span>
-            Refreshed: {formatLastUpdated(lastUpdated)}
+            Updated: {formatLastUpdated(lastUpdated)}
           </span>
         )}
       </div>
