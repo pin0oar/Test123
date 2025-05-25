@@ -4,11 +4,23 @@ import { Card } from '@/components/ui/card';
 
 interface TradingViewWidgetProps {
   symbol: string;
+  market?: string;
 }
 
-export const TradingViewWidget = ({ symbol }: TradingViewWidgetProps) => {
+export const TradingViewWidget = ({ symbol, market }: TradingViewWidgetProps) => {
   useEffect(() => {
     if (!symbol) return;
+
+    // Format symbol based on market
+    let formattedSymbol = symbol;
+    
+    if (market === 'Saudi Stock Exchange') {
+      // Remove anything after digits and add TADAWUL prefix
+      const cleanSymbol = symbol.replace(/[^0-9]/g, '');
+      formattedSymbol = `TADAWUL:${cleanSymbol}`;
+    } else {
+      formattedSymbol = `NASDAQ:${symbol}`;
+    }
 
     const script = document.createElement('script');
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-financials.js';
@@ -20,7 +32,7 @@ export const TradingViewWidget = ({ symbol }: TradingViewWidgetProps) => {
       "width": "100%",
       "height": 550,
       "colorTheme": "dark",
-      "symbol": `NASDAQ:${symbol}`,
+      "symbol": formattedSymbol,
       "locale": "ar"
     });
 
@@ -28,16 +40,13 @@ export const TradingViewWidget = ({ symbol }: TradingViewWidgetProps) => {
     if (widgetContainer) {
       // Clear existing content
       widgetContainer.innerHTML = '';
-      // Add widget container
       const widgetDiv = document.createElement('div');
       widgetDiv.className = 'tradingview-widget-container__widget';
       widgetContainer.appendChild(widgetDiv);
-      // Add copyright
       const copyrightDiv = document.createElement('div');
       copyrightDiv.className = 'tradingview-widget-copyright';
       copyrightDiv.innerHTML = '<a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a>';
       widgetContainer.appendChild(copyrightDiv);
-      // Add script
       widgetContainer.appendChild(script);
     }
 
@@ -47,7 +56,7 @@ export const TradingViewWidget = ({ symbol }: TradingViewWidgetProps) => {
         widgetContainer.innerHTML = '';
       }
     };
-  }, [symbol]);
+  }, [symbol, market]);
 
   return (
     <Card className="p-6">

@@ -1,4 +1,3 @@
-
 import { useParams } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/card';
@@ -58,7 +57,7 @@ const TickerDetail = () => {
         <main className="container mx-auto px-4 py-6 space-y-6">
           <TickerHeader symbol={tickerData.symbol} name={tickerData.name} />
           <TickerInfo tickerData={tickerData} />
-          <TradingViewWidget symbol={tickerData.symbol} />
+          <TradingViewWidget symbol={tickerData.symbol} market={tickerData.market} />
 
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
