@@ -1,6 +1,5 @@
 
 import { useEffect } from 'react';
-import { Card } from '@/components/ui/card';
 
 interface SymbolInfoWidgetProps {
   symbol: string;
@@ -54,14 +53,9 @@ export const SymbolInfoWidget = ({ symbol, market }: SymbolInfoWidgetProps) => {
   }, [symbol, market]);
 
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        Symbol Information
-      </h3>
-      <div 
-        id="symbol-info-widget" 
-        className="tradingview-widget-container w-full"
-      />
-    </Card>
+    <div 
+      id="symbol-info-widget" 
+      className="tradingview-widget-container w-full"
+    />
   );
 };

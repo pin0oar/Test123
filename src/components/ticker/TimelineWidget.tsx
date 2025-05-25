@@ -1,6 +1,5 @@
 
 import { useEffect } from 'react';
-import { Card } from '@/components/ui/card';
 
 interface TimelineWidgetProps {
   symbol: string;
@@ -57,14 +56,9 @@ export const TimelineWidget = ({ symbol, market }: TimelineWidgetProps) => {
   }, [symbol, market]);
 
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        News & Timeline
-      </h3>
-      <div 
-        id="timeline-widget" 
-        className="tradingview-widget-container w-full"
-      />
-    </Card>
+    <div 
+      id="timeline-widget" 
+      className="tradingview-widget-container w-full"
+    />
   );
 };

@@ -1,6 +1,5 @@
 
 import { useEffect } from 'react';
-import { Card } from '@/components/ui/card';
 
 interface TradingViewWidgetProps {
   symbol: string;
@@ -36,7 +35,7 @@ export const TradingViewWidget = ({ symbol, market }: TradingViewWidgetProps) =>
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-financials.js';
     script.async = true;
     script.innerHTML = JSON.stringify({
-      "isTransparent": true,
+      "isTransparent": false,
       "largeChartUrl": "",
       "displayMode": "adaptive",
       "width": "100%",
@@ -69,14 +68,9 @@ export const TradingViewWidget = ({ symbol, market }: TradingViewWidgetProps) =>
   }, [symbol, market]);
 
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        Financial Data & Charts
-      </h3>
-      <div 
-        id="tradingview-widget" 
-        className="tradingview-widget-container w-full"
-      />
-    </Card>
+    <div 
+      id="tradingview-widget" 
+      className="tradingview-widget-container w-full"
+    />
   );
 };

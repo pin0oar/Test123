@@ -1,6 +1,5 @@
 
 import { useEffect } from 'react';
-import { Card } from '@/components/ui/card';
 
 interface TechnicalAnalysisWidgetProps {
   symbol: string;
@@ -58,14 +57,9 @@ export const TechnicalAnalysisWidget = ({ symbol, market }: TechnicalAnalysisWid
   }, [symbol, market]);
 
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        Technical Analysis
-      </h3>
-      <div 
-        id="technical-analysis-widget" 
-        className="tradingview-widget-container w-full"
-      />
-    </Card>
+    <div 
+      id="technical-analysis-widget" 
+      className="tradingview-widget-container w-full"
+    />
   );
 };

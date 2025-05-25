@@ -1,7 +1,6 @@
 
 import { useParams } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
-import { Card } from '@/components/ui/card';
 import { useTickerData } from '@/hooks/useTickerData';
 import { TickerHeader } from '@/components/ticker/TickerHeader';
 import { TickerInfo } from '@/components/ticker/TickerInfo';
@@ -26,8 +25,8 @@ const TickerDetail = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Header />
         
-        <main className="container mx-auto px-4 py-6 space-y-6">
-          <div className="flex items-center space-x-4">
+        <main className="container mx-auto px-4 py-6">
+          <div className="flex items-center space-x-4 mb-6">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {symbol.toUpperCase()}
@@ -38,25 +37,27 @@ const TickerDetail = () => {
             </div>
           </div>
           
-          {/* Symbol Info Widget */}
-          <SymbolInfoWidget symbol={symbol.toUpperCase()} />
+          <div className="space-y-6">
+            {/* Symbol Info Widget */}
+            <SymbolInfoWidget symbol={symbol.toUpperCase()} />
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Financial Chart */}
-            <TradingViewWidget symbol={symbol.toUpperCase()} />
-            
-            {/* Technical Analysis */}
-            <TechnicalAnalysisWidget symbol={symbol.toUpperCase()} />
-          </div>
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Financial Chart */}
+              <TradingViewWidget symbol={symbol.toUpperCase()} />
+              
+              {/* Technical Analysis */}
+              <TechnicalAnalysisWidget symbol={symbol.toUpperCase()} />
+            </div>
 
-          {/* Bottom Section Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Company Profile */}
-            <SymbolProfileWidget symbol={symbol.toUpperCase()} />
-            
-            {/* News Timeline */}
-            <TimelineWidget symbol={symbol.toUpperCase()} />
+            {/* Bottom Section Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Company Profile */}
+              <SymbolProfileWidget symbol={symbol.toUpperCase()} />
+              
+              {/* News Timeline */}
+              <TimelineWidget symbol={symbol.toUpperCase()} />
+            </div>
           </div>
         </main>
       </div>
@@ -69,29 +70,33 @@ const TickerDetail = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Header />
         
-        <main className="container mx-auto px-4 py-6 space-y-6">
+        <main className="container mx-auto px-4 py-6">
           <TickerHeader symbol={tickerData.symbol} name={tickerData.name} />
-          <TickerInfo tickerData={tickerData} />
-          
-          {/* Symbol Info Widget */}
-          <SymbolInfoWidget symbol={tickerData.symbol} market={tickerData.market} />
-
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Financial Chart */}
-            <TradingViewWidget symbol={tickerData.symbol} market={tickerData.market} />
-            
-            {/* Technical Analysis */}
-            <TechnicalAnalysisWidget symbol={tickerData.symbol} market={tickerData.market} />
+          <div className="mb-6">
+            <TickerInfo tickerData={tickerData} />
           </div>
+          
+          <div className="space-y-6">
+            {/* Symbol Info Widget */}
+            <SymbolInfoWidget symbol={tickerData.symbol} market={tickerData.market} />
 
-          {/* Bottom Section Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Company Profile */}
-            <SymbolProfileWidget symbol={tickerData.symbol} market={tickerData.market} />
-            
-            {/* News Timeline */}
-            <TimelineWidget symbol={tickerData.symbol} market={tickerData.market} />
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Financial Chart */}
+              <TradingViewWidget symbol={tickerData.symbol} market={tickerData.market} />
+              
+              {/* Technical Analysis */}
+              <TechnicalAnalysisWidget symbol={tickerData.symbol} market={tickerData.market} />
+            </div>
+
+            {/* Bottom Section Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Company Profile */}
+              <SymbolProfileWidget symbol={tickerData.symbol} market={tickerData.market} />
+              
+              {/* News Timeline */}
+              <TimelineWidget symbol={tickerData.symbol} market={tickerData.market} />
+            </div>
           </div>
         </main>
       </div>
