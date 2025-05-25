@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useMarketData } from '@/hooks/useMarketData';
 import { useDataSync } from '@/hooks/useDataSync';
-import { TrendingUp, TrendingDown, Database, RefreshCw, Download, AlertTriangle } from 'lucide-react';
+import { useTwelveData } from '@/hooks/useTwelveData';
+import { TrendingUp, TrendingDown, Database, RefreshCw, Download, AlertTriangle, Search } from 'lucide-react';
 
 export const MarketOverview = () => {
   const { t } = useLanguage();
   const { markets, loading, lastUpdated, refreshMarketData } = useMarketData();
   const { syncIndicesData, syncing } = useDataSync();
+  const { testSymbolAvailability, loading: testingSymbols } = useTwelveData();
 
   const handleRefresh = () => {
     refreshMarketData();
@@ -22,6 +24,14 @@ export const MarketOverview = () => {
       refreshMarketData();
     } catch (error) {
       console.error('Sync failed:', error);
+    }
+  };
+
+  const handleTestSymbols = async () => {
+    try {
+      await testSymbolAvailability();
+    } catch (error) {
+      console.error('Symbol test failed:', error);
     }
   };
 
@@ -67,7 +77,7 @@ export const MarketOverview = () => {
           <div className="flex items-center space-x-1">
             <Database className="h-4 w-4 text-blue-500" />
             <span className="text-xs font-medium text-blue-600">
-              Database
+              Twelve Data
             </span>
           </div>
           
@@ -79,6 +89,17 @@ export const MarketOverview = () => {
               </span>
             </div>
           )}
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleTestSymbols}
+            disabled={testingSymbols}
+            className="h-8 w-8"
+            title="Test symbol availability"
+          >
+            <Search className={`h-4 w-4 ${testingSymbols ? 'animate-spin' : ''}`} />
+          </Button>
           
           <Button
             variant="ghost"
@@ -104,10 +125,11 @@ export const MarketOverview = () => {
         </div>
       </div>
       
-      {(loading && markets.length === 0) || syncing ? (
+      {(loading && markets.length === 0) || syncing || testingSymbols ? (
         <div className="text-center py-4">
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            {syncing ? 'Syncing from Twelve Data...' : 'Loading market data...'}
+            {testingSymbols ? 'Testing symbol availability...' : 
+             syncing ? 'Syncing from Twelve Data...' : 'Loading market data...'}
           </div>
         </div>
       ) : markets.length === 0 ? (
@@ -116,18 +138,28 @@ export const MarketOverview = () => {
             No market data available
           </div>
           <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Click the sync button to fetch data from Twelve Data
+            Click the test button to check symbol availability or sync to fetch data
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleSync}
-            disabled={syncing}
-            className="mt-2"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Sync Data
-          </Button>
+          <div className="flex justify-center space-x-2 mt-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleTestSymbols}
+              disabled={testingSymbols}
+            >
+              <Search className="h-4 w-4 mr-2" />
+              Test Symbols
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleSync}
+              disabled={syncing}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Sync Data
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">

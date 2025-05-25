@@ -24,15 +24,44 @@ interface MarketData {
   currency: string;
 }
 
-// Mapping from our tracked symbols to Twelve Data symbols
-const SYMBOL_MAPPING: Record<string, string> = {
-  'SPX': 'SPX',
-  'IXIC': 'IXIC', 
-  'DJI': 'DJI',
-  'UKX': 'UKX',
-  'DAX': 'DAX',
-  'TASI': 'TASI.TADAWUL'
+// Test multiple symbol variations for major indices
+const SYMBOL_VARIATIONS = {
+  'SPX': ['SPX', 'SPY', '^SPX', '^GSPC', 'SP500'],
+  'DJI': ['DJI', 'DIA', '^DJI', '^IXIC', 'DOW'],
+  'IXIC': ['IXIC', 'QQQ', '^IXIC', 'NASDAQ', 'NDX'],
+  'UKX': ['UKX', 'FTSE', '^FTSE', 'UKX.L'],
+  'DAX': ['DAX', '^GDAXI', 'DAX.F', 'GER30'],
+  'TASI': ['TASI', 'TASI.TADAWUL', 'TASI.SR', 'TASI.SAU']
 };
+
+async function testSymbolAvailability(apiKey: string): Promise<void> {
+  console.log('Testing symbol availability for major indices...');
+  
+  for (const [indexName, symbols] of Object.entries(SYMBOL_VARIATIONS)) {
+    console.log(`\n--- Testing ${indexName} ---`);
+    
+    for (const symbol of symbols) {
+      try {
+        const url = `https://api.twelvedata.com/quote?symbol=${symbol}&apikey=${apiKey}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.code && data.message) {
+          console.log(`${symbol}: ERROR - ${data.message}`);
+        } else if (data.symbol && data.price) {
+          console.log(`${symbol}: SUCCESS - ${data.name} (${data.currency}) - Price: ${data.price}`);
+        } else {
+          console.log(`${symbol}: UNKNOWN RESPONSE - ${JSON.stringify(data)}`);
+        }
+      } catch (error) {
+        console.log(`${symbol}: FETCH ERROR - ${error.message}`);
+      }
+      
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }
+}
 
 async function fetchTwelveDataQuote(symbols: string[], apiKey: string): Promise<MarketData[]> {
   const symbolsParam = symbols.join(',');
@@ -58,7 +87,7 @@ async function fetchTwelveDataQuote(symbols: string[], apiKey: string): Promise<
     }
 
     const data = await response.json();
-    console.log('Twelve Data response:', data);
+    console.log('Twelve Data response:', JSON.stringify(data, null, 2));
 
     // Handle both single quote and multiple quotes response formats
     let quotes: TwelveDataQuote[] = [];
@@ -74,7 +103,7 @@ async function fetchTwelveDataQuote(symbols: string[], apiKey: string): Promise<
       quotes = [data];
     } else {
       // Multiple quotes response - Twelve Data returns an object with symbol keys
-      quotes = Object.values(data).filter((item: any) => item && item.symbol);
+      quotes = Object.values(data).filter((item: any) => item && item.symbol && !item.code);
     }
 
     const marketData: MarketData[] = quotes.map((quote: TwelveDataQuote) => ({
@@ -104,8 +133,17 @@ serve(async (req) => {
       throw new Error('TWELVE_DATA_API_KEY not configured');
     }
 
-    const { action, symbols } = await req.json();
+    const { action, symbols, testSymbols } = await req.json();
     console.log(`Processing Twelve Data action: ${action}`);
+    
+    if (action === 'test-symbols') {
+      await testSymbolAvailability(apiKey);
+      
+      return new Response(
+        JSON.stringify({ message: 'Symbol availability test completed. Check logs for results.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     if (action === 'quote') {
       if (!symbols || !Array.isArray(symbols) || symbols.length === 0) {
@@ -124,11 +162,11 @@ serve(async (req) => {
     }
 
     if (action === 'markets') {
-      // Get major market indices
-      const majorIndices = ['SPX', 'DJI', 'IXIC', 'UKX', 'DAX', 'TASI.TADAWUL'];
+      // Test ETFs that track major indices (more likely to be available on free tier)
+      const etfSymbols = ['SPY', 'QQQ', 'DIA', 'IWM', 'VTI', 'EFA'];
       
       try {
-        const marketData = await fetchTwelveDataQuote(majorIndices, apiKey);
+        const marketData = await fetchTwelveDataQuote(etfSymbols, apiKey);
         
         if (marketData.length > 0) {
           return new Response(
@@ -143,12 +181,12 @@ serve(async (req) => {
         
         // Return fallback market data when API fails
         const fallbackMarkets = [
-          { symbol: 'SPX', name: 'S&P 500', price: 4700, change: 25.5, changePercent: 0.55, currency: 'USD' },
-          { symbol: 'DJI', name: 'Dow Jones', price: 36000, change: -45.2, changePercent: -0.13, currency: 'USD' },
-          { symbol: 'IXIC', name: 'NASDAQ', price: 14500, change: 85.7, changePercent: 0.59, currency: 'USD' },
-          { symbol: 'UKX', name: 'FTSE 100', price: 8100, change: 12.3, changePercent: 0.15, currency: 'GBP' },
-          { symbol: 'DAX', name: 'DAX', price: 17000, change: -23.1, changePercent: -0.14, currency: 'EUR' },
-          { symbol: 'TASI', name: 'TASI', price: 11500, change: 45.2, changePercent: 0.39, currency: 'SAR' }
+          { symbol: 'SPY', name: 'SPDR S&P 500 ETF', price: 470, change: 2.5, changePercent: 0.53, currency: 'USD' },
+          { symbol: 'QQQ', name: 'Invesco QQQ Trust', price: 380, change: -1.2, changePercent: -0.32, currency: 'USD' },
+          { symbol: 'DIA', name: 'SPDR Dow Jones Industrial Average ETF', price: 360, change: 1.8, changePercent: 0.50, currency: 'USD' },
+          { symbol: 'IWM', name: 'iShares Russell 2000 ETF', price: 220, change: 0.5, changePercent: 0.23, currency: 'USD' },
+          { symbol: 'VTI', name: 'Vanguard Total Stock Market ETF', price: 240, change: 1.2, changePercent: 0.50, currency: 'USD' },
+          { symbol: 'EFA', name: 'iShares MSCI EAFE ETF', price: 78, change: -0.3, changePercent: -0.38, currency: 'USD' }
         ];
 
         return new Response(

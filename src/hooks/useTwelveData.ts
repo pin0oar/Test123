@@ -16,6 +16,43 @@ export const useTwelveData = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  const testSymbolAvailability = async () => {
+    try {
+      setLoading(true);
+      console.log('Testing symbol availability in Twelve Data...');
+      
+      const { data, error } = await supabase.functions.invoke('twelve-data', {
+        body: { action: 'test-symbols' }
+      });
+
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      console.log('Symbol test results:', data);
+      
+      toast({
+        title: 'Symbol Test Complete',
+        description: 'Check the browser console and Supabase logs for detailed results.',
+      });
+
+      return data;
+    } catch (error) {
+      console.error('Error testing symbols:', error);
+      
+      toast({
+        title: 'Test Failed',
+        description: 'Failed to test symbol availability. Check console for details.',
+        variant: 'destructive'
+      });
+      
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getMarketData = async (): Promise<MarketData[]> => {
     try {
       setLoading(true);
@@ -37,9 +74,12 @@ export const useTwelveData = () => {
       
       // Return fallback data instead of showing error
       return [
-        { symbol: 'SPX', name: 'S&P 500', price: 4700, change: 25.5, changePercent: 0.55, currency: 'USD' },
-        { symbol: 'DJI', name: 'Dow Jones', price: 36000, change: -45.2, changePercent: -0.13, currency: 'USD' },
-        { symbol: 'IXIC', name: 'NASDAQ', price: 14500, change: 85.7, changePercent: 0.59, currency: 'USD' }
+        { symbol: 'SPY', name: 'SPDR S&P 500 ETF', price: 470, change: 2.5, changePercent: 0.53, currency: 'USD' },
+        { symbol: 'QQQ', name: 'Invesco QQQ Trust', price: 380, change: -1.2, changePercent: -0.32, currency: 'USD' },
+        { symbol: 'DIA', name: 'SPDR Dow Jones Industrial Average ETF', price: 360, change: 1.8, changePercent: 0.50, currency: 'USD' },
+        { symbol: 'IWM', name: 'iShares Russell 2000 ETF', price: 220, change: 0.5, changePercent: 0.23, currency: 'USD' },
+        { symbol: 'VTI', name: 'Vanguard Total Stock Market ETF', price: 240, change: 1.2, changePercent: 0.50, currency: 'USD' },
+        { symbol: 'EFA', name: 'iShares MSCI EAFE ETF', price: 78, change: -0.3, changePercent: -0.38, currency: 'USD' }
       ];
     } finally {
       setLoading(false);
@@ -82,6 +122,7 @@ export const useTwelveData = () => {
   return {
     getMarketData,
     getQuotes,
+    testSymbolAvailability,
     loading
   };
 };
