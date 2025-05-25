@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { TickerSearch } from '@/components/ui/ticker-search';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useToast } from '@/hooks/use-toast';
 import { X } from 'lucide-react';
@@ -15,14 +16,20 @@ interface AddPortfolioModalProps {
   onAddPortfolio: (portfolio: { name: string; description?: string; tickers?: string }) => void;
 }
 
+interface SelectedTicker {
+  symbol: string;
+  name: string;
+  exchange: string;
+}
+
 export const AddPortfolioModal = ({ isOpen, onClose, onAddPortfolio }: AddPortfolioModalProps) => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
-    tickers: ''
+    description: ''
   });
+  const [selectedTickers, setSelectedTickers] = useState<SelectedTicker[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,14 +43,17 @@ export const AddPortfolioModal = ({ isOpen, onClose, onAddPortfolio }: AddPortfo
       return;
     }
 
+    const tickersString = selectedTickers.map(t => t.symbol).join(', ');
+
     onAddPortfolio({
       name: formData.name.trim(),
       description: formData.description.trim() || undefined,
-      tickers: formData.tickers.trim() || undefined
+      tickers: tickersString || undefined
     });
 
     // Reset form
-    setFormData({ name: '', description: '', tickers: '' });
+    setFormData({ name: '', description: '' });
+    setSelectedTickers([]);
     onClose();
 
     toast({
@@ -53,13 +63,24 @@ export const AddPortfolioModal = ({ isOpen, onClose, onAddPortfolio }: AddPortfo
   };
 
   const handleClose = () => {
-    setFormData({ name: '', description: '', tickers: '' });
+    setFormData({ name: '', description: '' });
+    setSelectedTickers([]);
     onClose();
+  };
+
+  const handleTickerSelect = (ticker: SelectedTicker) => {
+    if (!selectedTickers.find(t => t.symbol === ticker.symbol)) {
+      setSelectedTickers(prev => [...prev, ticker]);
+    }
+  };
+
+  const removeTicker = (symbol: string) => {
+    setSelectedTickers(prev => prev.filter(t => t.symbol !== symbol));
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
             {t('createPortfolio')}
@@ -96,19 +117,37 @@ export const AddPortfolioModal = ({ isOpen, onClose, onAddPortfolio }: AddPortfo
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="initialTickers" className="text-sm font-medium">
-              {t('initialTickers')} ({t('optional')})
+            <Label className="text-sm font-medium">
+              Initial Tickers ({t('optional')})
             </Label>
-            <Textarea
-              id="initialTickers"
-              value={formData.tickers}
-              onChange={(e) => setFormData(prev => ({ ...prev, tickers: e.target.value }))}
-              placeholder={t('enterTickersPlaceholder')}
-              className="w-full min-h-[80px]"
-              maxLength={500}
+            <TickerSearch
+              onSelect={handleTickerSelect}
+              placeholder="Search and add tickers..."
             />
+            
+            {selectedTickers.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {selectedTickers.map((ticker) => (
+                  <div
+                    key={ticker.symbol}
+                    className="flex items-center gap-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-md text-sm"
+                  >
+                    <span className="font-medium">{ticker.symbol}</span>
+                    <span className="text-xs opacity-75">• {ticker.exchange}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeTicker(ticker.symbol)}
+                      className="ml-1 hover:bg-blue-200 dark:hover:bg-blue-800 rounded p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              {t('tickersHint')}
+              Search for stocks, ETFs, and other securities to add to your portfolio
             </p>
           </div>
 
