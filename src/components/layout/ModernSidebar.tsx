@@ -23,7 +23,7 @@ export const ModernSidebar = () => {
       {/* Logo Section */}
       <div className="p-6 border-b border-slate-600">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-emerald-400 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-lg">R</span>
           </div>
           <h1 className="text-xl font-semibold text-white">
@@ -42,7 +42,7 @@ export const ModernSidebar = () => {
                 variant="ghost"
                 className={`w-full justify-start h-11 px-4 text-slate-300 hover:text-white hover:bg-slate-600 transition-colors ${
                   isActive 
-                    ? 'bg-slate-600 text-white border-r-2 border-green-500' 
+                    ? 'bg-slate-600 text-white border-r-2 border-emerald-400' 
                     : ''
                 }`}
               >

@@ -30,7 +30,7 @@ export const ModernHeader = () => {
           <input
             type="text"
             placeholder="Search..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent"
           />
         </div>
       </div>
@@ -68,7 +68,7 @@ export const ModernHeader = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-9 px-3 text-gray-600 hover:text-gray-900">
-                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-2">
+                <div className="w-6 h-6 bg-emerald-400 rounded-full flex items-center justify-center mr-2">
                   <User className="h-3 w-3 text-white" />
                 </div>
                 <span className="text-sm font-medium">{user.email?.split('@')[0]}</span>
