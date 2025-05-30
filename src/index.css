@@ -7,107 +7,107 @@
 /* Define CSS custom properties (variables) for theming */
 @layer base {
   :root {
-    /* Light theme color definitions using RGB values */
+    /* Light theme color definitions using HSL values for better color harmony */
     
-    /* Main background and text colors */
-    --background: 248 250 252; /* Very light gray background */
-    --foreground: 15 23 42;    /* Dark slate text color */
+    /* Main background and text colors - Clean whites and dark grays */
+    --background: 0 0% 100%;        /* Pure white background */
+    --foreground: 222.2 84% 4.9%;   /* Very dark blue-gray text */
 
-    /* Card component colors */
-    --card: 255 255 255;       /* Pure white card background */
-    --card-foreground: 15 23 42; /* Dark text on cards */
+    /* Card component colors - Subtle off-white cards */
+    --card: 0 0% 100%;              /* Pure white card background */
+    --card-foreground: 222.2 84% 4.9%; /* Dark text on cards */
 
     /* Popover/dropdown colors */
-    --popover: 255 255 255;    /* White popover background */
-    --popover-foreground: 15 23 42; /* Dark text in popovers */
+    --popover: 0 0% 100%;           /* White popover background */
+    --popover-foreground: 222.2 84% 4.9%; /* Dark text in popovers */
 
-    /* Primary brand colors (emerald green) */
-    --primary: 16 185 129;     /* Emerald-500 for buttons, links */
-    --primary-foreground: 255 255 255; /* White text on primary elements */
+    /* Primary brand colors - Modern blue palette */
+    --primary: 221.2 83.2% 53.3%;   /* Vibrant blue for buttons, links */
+    --primary-foreground: 210 40% 98%; /* Almost white text on primary elements */
 
-    /* Secondary/muted colors */
-    --secondary: 241 245 249;  /* Light gray for secondary elements */
-    --secondary-foreground: 51 65 85; /* Medium gray text */
+    /* Secondary/muted colors - Light blue-grays */
+    --secondary: 210 40% 96%;       /* Very light blue-gray for secondary elements */
+    --secondary-foreground: 222.2 47.4% 11.2%; /* Medium dark text */
 
     /* Muted colors for less important elements */
-    --muted: 248 250 252;      /* Very light gray backgrounds */
-    --muted-foreground: 100 116 139; /* Gray text for muted elements */
+    --muted: 210 40% 96%;           /* Very light blue-gray backgrounds */
+    --muted-foreground: 215.4 16.3% 46.9%; /* Medium gray text for muted elements */
 
-    /* Accent colors for highlights */
-    --accent: 240 253 244;     /* Very light emerald background */
-    --accent-foreground: 22 101 52; /* Dark emerald text */
+    /* Accent colors for highlights - Soft blue tones */
+    --accent: 210 40% 96%;          /* Light blue background */
+    --accent-foreground: 222.2 47.4% 11.2%; /* Dark blue text */
 
-    /* Error/destructive colors */
-    --destructive: 239 68 68;  /* Red for errors and delete actions */
-    --destructive-foreground: 255 255 255; /* White text on red backgrounds */
+    /* Error/destructive colors - Modern red */
+    --destructive: 0 72.2% 50.6%;   /* Clean red for errors and delete actions */
+    --destructive-foreground: 210 40% 98%; /* White text on red backgrounds */
 
-    /* Border and input colors */
-    --border: 226 232 240;     /* Light gray for borders */
-    --input: 226 232 240;      /* Same as border for input fields */
-    --ring: 16 185 129;        /* Emerald focus ring color */
+    /* Border and input colors - Subtle blue-grays */
+    --border: 214.3 31.8% 91.4%;   /* Light blue-gray for borders */
+    --input: 214.3 31.8% 91.4%;    /* Same as border for input fields */
+    --ring: 221.2 83.2% 53.3%;     /* Blue focus ring color */
 
     /* Border radius for rounded corners */
-    --radius: 0.75rem;         /* 12px border radius */
+    --radius: 0.75rem;             /* 12px border radius */
 
-    /* Sidebar-specific color variables */
-    --sidebar-background: 30 41 59;    /* Dark slate sidebar background */
-    --sidebar-foreground: 203 213 225; /* Light text in sidebar */
-    --sidebar-primary: 16 185 129;     /* Emerald for active sidebar items */
-    --sidebar-primary-foreground: 255 255 255; /* White text on active items */
-    --sidebar-accent: 51 65 85;        /* Medium slate for hover states */
-    --sidebar-accent-foreground: 203 213 225; /* Light text on accents */
-    --sidebar-border: 51 65 85;        /* Medium slate for sidebar borders */
-    --sidebar-ring: 16 185 129;        /* Emerald for sidebar focus rings */
+    /* Sidebar-specific color variables - Cool dark blue theme */
+    --sidebar-background: 222.2 47.4% 11.2%;    /* Dark blue-gray sidebar background */
+    --sidebar-foreground: 213 31% 91%;          /* Light text in sidebar */
+    --sidebar-primary: 221.2 83.2% 53.3%;      /* Blue for active sidebar items */
+    --sidebar-primary-foreground: 210 40% 98%;  /* White text on active items */
+    --sidebar-accent: 215 25% 27%;              /* Medium blue-gray for hover states */
+    --sidebar-accent-foreground: 213 31% 91%;   /* Light text on accents */
+    --sidebar-border: 215 25% 27%;              /* Medium blue-gray for sidebar borders */
+    --sidebar-ring: 221.2 83.2% 53.3%;         /* Blue for sidebar focus rings */
   }
 
-  /* Dark theme color overrides */
+  /* Dark theme color overrides - Deep blue theme */
   .dark {
-    /* Inverted colors for dark mode */
-    --background: 15 23 42;    /* Dark slate background */
-    --foreground: 248 250 252; /* Light text */
+    /* Dark background with subtle blue tint */
+    --background: 224 71.4% 4.1%;   /* Very dark blue background */
+    --foreground: 210 40% 98%;      /* Light text */
 
-    /* Dark theme cards */
-    --card: 30 41 59;          /* Darker slate for cards */
-    --card-foreground: 248 250 252; /* Light text on dark cards */
+    /* Dark theme cards - Slightly lighter than background */
+    --card: 224 71.4% 4.1%;         /* Dark blue for cards */
+    --card-foreground: 210 40% 98%; /* Light text on dark cards */
 
     /* Dark theme popovers */
-    --popover: 30 41 59;       /* Dark popover background */
-    --popover-foreground: 248 250 252; /* Light text in popovers */
+    --popover: 224 71.4% 4.1%;      /* Dark blue popover background */
+    --popover-foreground: 210 40% 98%; /* Light text in popovers */
 
-    /* Primary colors stay the same in dark mode */
-    --primary: 16 185 129;     /* Same emerald color */
-    --primary-foreground: 255 255 255; /* White text */
+    /* Primary colors - Lighter blue for dark mode */
+    --primary: 217.2 91.2% 59.8%;   /* Brighter blue for dark mode */
+    --primary-foreground: 222.2 84% 4.9%; /* Dark text on bright blue */
 
     /* Adjusted secondary colors for dark mode */
-    --secondary: 51 65 85;     /* Medium slate */
-    --secondary-foreground: 203 213 225; /* Light gray text */
+    --secondary: 222.2 47.4% 11.2%; /* Dark blue-gray */
+    --secondary-foreground: 210 40% 98%; /* Light text */
 
     /* Dark mode muted colors */
-    --muted: 51 65 85;         /* Medium slate for muted backgrounds */
-    --muted-foreground: 148 163 184; /* Lighter gray for muted text */
+    --muted: 215 27.9% 16.9%;       /* Medium dark blue for muted backgrounds */
+    --muted-foreground: 217.9 10.6% 64.9%; /* Medium light text for muted elements */
 
     /* Dark mode accent colors */
-    --accent: 20 83 45;        /* Dark emerald background */
-    --accent-foreground: 187 247 208; /* Light emerald text */
+    --accent: 215 27.9% 16.9%;      /* Medium dark blue background */
+    --accent-foreground: 210 40% 98%; /* Light text */
 
-    /* Error colors stay the same */
-    --destructive: 239 68 68;  /* Same red */
-    --destructive-foreground: 255 255 255; /* White text */
+    /* Error colors - Softer red for dark mode */
+    --destructive: 0 62.8% 30.6%;   /* Darker red for dark mode */
+    --destructive-foreground: 210 40% 98%; /* Light text */
 
     /* Dark mode borders and inputs */
-    --border: 51 65 85;        /* Medium slate borders */
-    --input: 51 65 85;         /* Same for inputs */
-    --ring: 16 185 129;        /* Same emerald focus ring */
+    --border: 215 27.9% 16.9%;      /* Medium dark blue borders */
+    --input: 215 27.9% 16.9%;       /* Same for inputs */
+    --ring: 217.2 91.2% 59.8%;     /* Bright blue focus ring */
 
-    /* Dark mode sidebar colors */
-    --sidebar-background: 15 23 42;    /* Even darker background */
-    --sidebar-foreground: 203 213 225; /* Light text */
-    --sidebar-primary: 16 185 129;     /* Same emerald */
-    --sidebar-primary-foreground: 255 255 255; /* White text */
-    --sidebar-accent: 30 41 59;        /* Dark slate accent */
-    --sidebar-accent-foreground: 203 213 225; /* Light text */
-    --sidebar-border: 30 41 59;        /* Dark slate borders */
-    --sidebar-ring: 16 185 129;        /* Same emerald focus */
+    /* Dark mode sidebar colors - Even darker blue theme */
+    --sidebar-background: 222.2 84% 4.9%;     /* Very dark blue background */
+    --sidebar-foreground: 210 40% 98%;        /* Light text */
+    --sidebar-primary: 217.2 91.2% 59.8%;    /* Bright blue for active items */
+    --sidebar-primary-foreground: 222.2 84% 4.9%; /* Dark text on bright blue */
+    --sidebar-accent: 215 27.9% 16.9%;        /* Medium dark blue accent */
+    --sidebar-accent-foreground: 210 40% 98%; /* Light text */
+    --sidebar-border: 215 27.9% 16.9%;        /* Medium dark blue borders */
+    --sidebar-ring: 217.2 91.2% 59.8%;       /* Bright blue focus */
   }
 }
 
@@ -118,25 +118,25 @@
     @apply border-border;
   }
 
-  /* Body element styling */
+  /* Body element styling with smooth transitions */
   body {
-    @apply bg-background text-foreground font-medium;
-    /* Uses CSS variables for background, text color, and medium font weight */
+    @apply bg-background text-foreground font-medium transition-colors duration-300;
+    /* Uses CSS variables for background, text color, medium font weight, and smooth color transitions */
   }
 }
 
 /* Custom component classes */
 @layer components {
-  /* Modern card styling class */
+  /* Modern card styling class with enhanced shadows */
   .card-modern {
-    @apply bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200;
-    /* White background, extra large border radius, light border, small shadow that grows on hover with smooth transition */
+    @apply bg-card rounded-xl border border-border shadow-sm hover:shadow-lg transition-all duration-300;
+    /* Card background, extra large border radius, subtle border, enhanced shadow that grows on hover with smooth transition */
   }
   
-  /* Modern badge/pill styling */
+  /* Modern badge/pill styling with cool colors */
   .badge-modern {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
-    /* Inline flex layout, padding, fully rounded corners, small text, medium font weight */
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground;
+    /* Inline flex layout, padding, fully rounded corners, small text, medium font weight, cool secondary colors */
   }
   
   /* Modern table base styling */
@@ -145,21 +145,27 @@
     /* Full width, collapsed borders between cells */
   }
   
-  /* Table header styling */
+  /* Table header styling with cool theme */
   .table-modern th {
-    @apply px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200;
-    /* Padding, left alignment, small uppercase text, bottom border */
+    @apply px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border;
+    /* Padding, left alignment, small uppercase text, cool muted colors, bottom border */
   }
   
-  /* Table cell styling */
+  /* Table cell styling with subtle alternating colors */
   .table-modern td {
-    @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-b border-gray-100;
-    /* Padding, prevent text wrapping, small text, light bottom border */
+    @apply px-6 py-4 whitespace-nowrap text-sm text-foreground border-b border-border/50;
+    /* Padding, prevent text wrapping, small text, subtle bottom border with opacity */
   }
   
   /* Alternating row colors for better readability */
   .table-modern tr:nth-child(even) {
-    @apply bg-gray-50/50;
-    /* Light gray background with 50% opacity for even rows */
+    @apply bg-muted/30;
+    /* Light muted background with low opacity for even rows */
+  }
+
+  /* Hover effects for interactive elements */
+  .table-modern tr:hover {
+    @apply bg-muted/50;
+    /* Slightly stronger muted background on hover */
   }
 }
