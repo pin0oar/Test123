@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { Header } from '@/components/layout/Header';
+import { ModernHeader } from '@/components/layout/ModernHeader';
+import { ModernSidebar } from '@/components/layout/ModernSidebar';
 import { PortfolioOverview } from '@/components/dashboard/PortfolioOverview';
 import { PerformanceTimeline } from '@/components/dashboard/PerformanceTimeline';
 import { PortfolioSummary } from '@/components/dashboard/PortfolioSummary';
@@ -25,35 +26,41 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Header />
+    <div className="min-h-screen bg-slate-50 flex">
+      {/* Sidebar */}
+      <ModernSidebar />
       
-      <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Portfolio Overview Cards */}
-        <PortfolioOverview 
-          totalValue={totalValue}
-          totalPnL={totalPnL}
-          totalPnLPercentage={totalPnLPercentage}
-          portfolioCount={portfolios.length}
-        />
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        <ModernHeader />
+        
+        <main className="flex-1 p-6 space-y-6 overflow-auto">
+          {/* Portfolio Overview Cards */}
+          <PortfolioOverview 
+            totalValue={totalValue}
+            totalPnL={totalPnL}
+            totalPnLPercentage={totalPnLPercentage}
+            portfolioCount={portfolios.length}
+          />
 
-        {/* Performance Timeline */}
-        <PerformanceTimeline totalValue={totalValue} />
+          {/* Performance Timeline */}
+          <PerformanceTimeline totalValue={totalValue} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            <PortfolioSummary portfolios={portfolios} onAddPortfolio={handleAddPortfolio} />
-            <QuickActions onAddPortfolio={handleAddPortfolio} />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-6">
+              <PortfolioSummary portfolios={portfolios} onAddPortfolio={handleAddPortfolio} />
+              <QuickActions onAddPortfolio={handleAddPortfolio} />
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              <MarketOverview />
+              <RecentActivity />
+            </div>
           </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <MarketOverview />
-            <RecentActivity />
-          </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };
