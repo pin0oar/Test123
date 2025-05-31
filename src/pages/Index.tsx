@@ -14,7 +14,13 @@ const Index = () => {
 
   // Handler function for adding new portfolios
   const handleAddPortfolio = (portfolio: { name: string; description?: string; tickers?: string }) => {
-    addPortfolio(portfolio);
+    addPortfolio({
+      name: portfolio.name,
+      description: portfolio.description,
+      totalValue: 0,
+      totalPnL: 0,
+      totalPnLPercentage: 0
+    });
   };
 
   return (
