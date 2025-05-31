@@ -12,7 +12,7 @@ export const usePortfolioHoldingsSync = () => {
       setSyncing(true);
       console.log('Checking for holdings with missing symbols...');
 
-      // Find holdings that reference symbols not in the symbols table
+      // Find holdings that have no symbol_id reference
       const { data: holdingsWithMissingSymbols, error: holdingsError } = await supabase
         .from('holdings')
         .select(`
@@ -20,19 +20,23 @@ export const usePortfolioHoldingsSync = () => {
           symbol,
           name,
           market,
-          currency
-        `);
+          currency,
+          symbol_id
+        `)
+        .is('symbol_id', null);
 
       if (holdingsError) throw holdingsError;
 
       if (!holdingsWithMissingSymbols || holdingsWithMissingSymbols.length === 0) {
-        console.log('No holdings found');
+        console.log('No holdings with missing symbols found');
         return 0;
       }
 
       let addedCount = 0;
 
       for (const holding of holdingsWithMissingSymbols) {
+        console.log(`Processing holding with missing symbol_id: ${holding.symbol}`);
+        
         // Check if symbol exists in symbols table
         const { data: existingSymbol, error: symbolError } = await supabase
           .from('symbols')
@@ -45,10 +49,24 @@ export const usePortfolioHoldingsSync = () => {
           continue;
         }
 
-        if (!existingSymbol) {
-          console.log(`Adding missing symbol: ${holding.symbol}`);
+        if (existingSymbol) {
+          // Update the holding with the existing symbol_id
+          const { error: updateError } = await supabase
+            .from('holdings')
+            .update({ symbol_id: existingSymbol.id })
+            .eq('id', holding.id);
+            
+          if (updateError) {
+            console.error(`Failed to update holding ${holding.id}:`, updateError);
+            continue;
+          }
           
-          // Try to auto-add the symbol
+          addedCount++;
+          console.log(`Updated holding ${holding.id} with symbol_id ${existingSymbol.id}`);
+        } else {
+          // Create the symbol first
+          console.log(`Creating missing symbol: ${holding.symbol}`);
+          
           try {
             // Determine exchange based on market or currency
             let exchangeCode = 'NYSE'; // default
@@ -90,7 +108,7 @@ export const usePortfolioHoldingsSync = () => {
             }
 
             // Add the symbol
-            const { error: insertError } = await supabase
+            const { data: newSymbol, error: insertError } = await supabase
               .from('symbols')
               .insert([{
                 symbol: holding.symbol.toUpperCase(),
@@ -99,14 +117,24 @@ export const usePortfolioHoldingsSync = () => {
                 currency: holding.currency || 'USD',
                 is_in_portfolio: true,
                 is_active: true
-              }]);
+              }])
+              .select('id')
+              .single();
 
             if (insertError) throw insertError;
 
+            // Update the holding with the new symbol_id
+            const { error: updateError } = await supabase
+              .from('holdings')
+              .update({ symbol_id: newSymbol.id })
+              .eq('id', holding.id);
+              
+            if (updateError) throw updateError;
+
             addedCount++;
-            console.log(`Successfully added symbol: ${holding.symbol}`);
+            console.log(`Successfully created symbol and updated holding: ${holding.symbol}`);
           } catch (error) {
-            console.error(`Failed to add symbol ${holding.symbol}:`, error);
+            console.error(`Failed to create symbol ${holding.symbol}:`, error);
           }
         }
       }
@@ -114,11 +142,11 @@ export const usePortfolioHoldingsSync = () => {
       if (addedCount > 0) {
         toast({
           title: 'Symbols Synced',
-          description: `Added ${addedCount} missing symbols to the database`,
+          description: `Updated ${addedCount} holdings with proper symbol references`,
         });
       }
 
-      console.log(`Sync complete. Added ${addedCount} symbols.`);
+      console.log(`Sync complete. Updated ${addedCount} holdings.`);
       return addedCount;
 
     } catch (error) {

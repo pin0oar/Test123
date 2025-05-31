@@ -115,6 +115,7 @@ export type Database = {
           portfolio_id: string
           quantity: number
           symbol: string
+          symbol_id: string | null
           total_value: number
           updated_at: string
         }
@@ -134,6 +135,7 @@ export type Database = {
           portfolio_id: string
           quantity: number
           symbol: string
+          symbol_id?: string | null
           total_value: number
           updated_at?: string
         }
@@ -153,10 +155,18 @@ export type Database = {
           portfolio_id?: string
           quantity?: number
           symbol?: string
+          symbol_id?: string | null
           total_value?: number
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_holdings_symbol_id"
+            columns: ["symbol_id"]
+            isOneToOne: false
+            referencedRelation: "symbols"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "holdings_portfolio_id_fkey"
             columns: ["portfolio_id"]
@@ -210,6 +220,7 @@ export type Database = {
           recorded_at: string
           source: string | null
           symbol: string
+          symbol_id: string | null
         }
         Insert: {
           currency?: string
@@ -218,6 +229,7 @@ export type Database = {
           recorded_at?: string
           source?: string | null
           symbol: string
+          symbol_id?: string | null
         }
         Update: {
           currency?: string
@@ -226,8 +238,17 @@ export type Database = {
           recorded_at?: string
           source?: string | null
           symbol?: string
+          symbol_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_price_history_symbol_id"
+            columns: ["symbol_id"]
+            isOneToOne: false
+            referencedRelation: "symbols"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       symbol_prices: {
         Row: {
