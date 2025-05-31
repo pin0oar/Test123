@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MarketAuxSymbol {
   symbol: string;
@@ -24,79 +25,44 @@ interface MarketAuxQuote {
   last_updated: string;
 }
 
-interface MarketAuxSearchResult {
-  data: MarketAuxSymbol[];
-  meta: {
-    found: number;
-    returned: number;
-  };
-}
-
-interface MarketAuxQuoteResult {
-  data: MarketAuxQuote[];
-  meta: {
-    found: number;
-    returned: number;
-  };
-}
-
 export const useMarketAux = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const makeMarketAuxRequest = async (endpoint: string, params: Record<string, string> = {}) => {
-    const apiKey = import.meta.env.VITE_MARKETAUX_API_KEY;
-    if (!apiKey) {
-      throw new Error('MarketAux API key not configured. Please set VITE_MARKETAUX_API_KEY in your environment.');
+  const callMarketAuxFunction = async (action: string, params: Record<string, string> = {}) => {
+    console.log(`Calling MarketAux edge function: ${action}`, params);
+
+    const { data, error } = await supabase.functions.invoke('marketaux-api', {
+      body: JSON.stringify({ action, params })
+    });
+
+    if (error) {
+      console.error('MarketAux edge function error:', error);
+      throw new Error(error.message || 'Failed to call MarketAux API');
     }
 
-    const url = new URL(`https://api.marketaux.com/v1/${endpoint}`);
-    url.searchParams.set('api_token', apiKey);
-    
-    for (const [key, value] of Object.entries(params)) {
-      url.searchParams.set(key, value);
-    }
-
-    console.log(`Making MarketAux request to: ${url.toString().replace(apiKey, 'API_KEY_HIDDEN')}`);
-
-    try {
-      const response = await fetch(url.toString(), {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-        signal: AbortSignal.timeout(10000)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`MarketAux API error: ${response.status} - ${errorText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error(`MarketAux request failed: ${error.message}`);
-      throw error;
-    }
+    return data;
   };
 
   const searchSymbols = async (query: string): Promise<MarketAuxSymbol[]> => {
     try {
       setLoading(true);
-      const data: MarketAuxSearchResult = await makeMarketAuxRequest('symbols/search', {
-        search: query,
-        limit: '10'
+      
+      const { data, error } = await supabase.functions.invoke('marketaux-api', {
+        body: null,
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }, {
+        query: { action: 'search', query }
       });
 
-      return data.data.map(item => ({
-        symbol: item.symbol,
-        name: item.name,
-        exchange: item.exchange,
-        country: item.country,
-        currency: item.currency,
-        type: item.type,
-        mic_code: item.mic_code
-      }));
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return data.symbols || [];
     } catch (error) {
       console.error('MarketAux search error:', error);
       toast({
@@ -113,22 +79,22 @@ export const useMarketAux = () => {
   const getQuotes = async (symbols: string[]): Promise<MarketAuxQuote[]> => {
     try {
       setLoading(true);
-      const symbolsParam = symbols.join(',');
-      const data: MarketAuxQuoteResult = await makeMarketAuxRequest('quotes', {
-        symbols: symbolsParam
+      
+      const { data, error } = await supabase.functions.invoke('marketaux-api', {
+        body: null,
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }, {
+        query: { action: 'quotes', symbols: symbols.join(',') }
       });
 
-      return data.data.map(quote => ({
-        symbol: quote.symbol,
-        name: quote.name,
-        price: quote.price,
-        change: quote.change,
-        change_percent: quote.change_percent,
-        currency: quote.currency,
-        exchange: quote.exchange,
-        mic_code: quote.mic_code,
-        last_updated: quote.last_updated
-      }));
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return data.quotes || [];
     } catch (error) {
       console.error('MarketAux quotes error:', error);
       toast({
@@ -145,9 +111,22 @@ export const useMarketAux = () => {
   const getMarketData = async (): Promise<MarketAuxQuote[]> => {
     try {
       setLoading(true);
-      // Get major market indices
-      const majorIndices = ['SPY', 'QQQ', 'DIA', 'IWM', 'VTI', 'EFA'];
-      return await getQuotes(majorIndices);
+      
+      const { data, error } = await supabase.functions.invoke('marketaux-api', {
+        body: null,
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }, {
+        query: { action: 'market-data' }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return data.quotes || [];
     } catch (error) {
       console.error('MarketAux market data error:', error);
       toast({

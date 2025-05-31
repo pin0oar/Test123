@@ -1,1 +1,8 @@
+
 project_id = "wpshwxydcokxgfnkesbo"
+
+[functions.marketaux-api]
+verify_jwt = false
+
+[functions.marketaux-sync]
+verify_jwt = false
