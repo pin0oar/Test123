@@ -53,6 +53,51 @@ export type Database = {
           },
         ]
       }
+      exchanges: {
+        Row: {
+          code: string
+          country: string
+          created_at: string
+          currency: string
+          id: string
+          is_open: boolean | null
+          last_status_update: string | null
+          market_close: string | null
+          market_open: string | null
+          name: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          country: string
+          created_at?: string
+          currency?: string
+          id?: string
+          is_open?: boolean | null
+          last_status_update?: string | null
+          market_close?: string | null
+          market_open?: string | null
+          name: string
+          timezone: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          country?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          is_open?: boolean | null
+          last_status_update?: string | null
+          market_close?: string | null
+          market_open?: string | null
+          name?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       holdings: {
         Row: {
           avg_price: number
@@ -234,6 +279,133 @@ export type Database = {
         }
         Relationships: []
       }
+      symbol_prices: {
+        Row: {
+          change_amount: number
+          change_percentage: number
+          created_at: string
+          data_source: string
+          dividend_yield: number | null
+          fetched_at: string
+          high_52_week: number | null
+          id: string
+          low_52_week: number | null
+          market_cap: number | null
+          market_session: string | null
+          price: number
+          symbol_id: string
+          updated_at: string
+          volume: number | null
+        }
+        Insert: {
+          change_amount?: number
+          change_percentage?: number
+          created_at?: string
+          data_source: string
+          dividend_yield?: number | null
+          fetched_at?: string
+          high_52_week?: number | null
+          id?: string
+          low_52_week?: number | null
+          market_cap?: number | null
+          market_session?: string | null
+          price: number
+          symbol_id: string
+          updated_at?: string
+          volume?: number | null
+        }
+        Update: {
+          change_amount?: number
+          change_percentage?: number
+          created_at?: string
+          data_source?: string
+          dividend_yield?: number | null
+          fetched_at?: string
+          high_52_week?: number | null
+          id?: string
+          low_52_week?: number | null
+          market_cap?: number | null
+          market_session?: string | null
+          price?: number
+          symbol_id?: string
+          updated_at?: string
+          volume?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "symbol_prices_symbol_id_fkey"
+            columns: ["symbol_id"]
+            isOneToOne: false
+            referencedRelation: "symbols"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      symbols: {
+        Row: {
+          alternative_name_1: string | null
+          alternative_name_2: string | null
+          alternative_name_3: string | null
+          alternative_name_4: string | null
+          created_at: string
+          currency: string
+          exchange_id: string
+          id: string
+          industry: string | null
+          is_active: boolean
+          is_halal: boolean | null
+          is_in_portfolio: boolean
+          name: string
+          sector: string | null
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          alternative_name_1?: string | null
+          alternative_name_2?: string | null
+          alternative_name_3?: string | null
+          alternative_name_4?: string | null
+          created_at?: string
+          currency?: string
+          exchange_id: string
+          id?: string
+          industry?: string | null
+          is_active?: boolean
+          is_halal?: boolean | null
+          is_in_portfolio?: boolean
+          name: string
+          sector?: string | null
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          alternative_name_1?: string | null
+          alternative_name_2?: string | null
+          alternative_name_3?: string | null
+          alternative_name_4?: string | null
+          created_at?: string
+          currency?: string
+          exchange_id?: string
+          id?: string
+          industry?: string | null
+          is_active?: boolean
+          is_halal?: boolean | null
+          is_in_portfolio?: boolean
+          name?: string
+          sector?: string | null
+          symbol?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "symbols_exchange_id_fkey"
+            columns: ["exchange_id"]
+            isOneToOne: false
+            referencedRelation: "exchanges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tickers_data: {
         Row: {
           change_amount: number
@@ -410,6 +582,15 @@ export type Database = {
           p_currency?: string
         }
         Returns: string
+      }
+      get_symbols_for_price_update: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          symbol_id: string
+          symbol: string
+          exchange_code: string
+          last_updated: string
+        }[]
       }
     }
     Enums: {
