@@ -131,7 +131,7 @@ serve(async (req) => {
         }
 
         // Use the correct endpoint for real-time quotes
-        const data = await makeMarketAuxRequest('real-time', {
+        const data = await makeMarketAuxRequest('quotes/real-time', {
           symbols: symbolsParam
         });
 
@@ -159,7 +159,7 @@ serve(async (req) => {
       case 'market-data': {
         // Get major market indices
         const majorIndices = ['SPY', 'QQQ', 'DIA', 'IWM', 'VTI', 'EFA'];
-        const data = await makeMarketAuxRequest('real-time', {
+        const data = await makeMarketAuxRequest('quotes/real-time', {
           symbols: majorIndices.join(',')
         });
 
