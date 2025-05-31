@@ -24,10 +24,25 @@ export const useMarketData = () => {
       setLoading(true);
       console.log('Fetching market data from database...');
       
+      // Query market indices from symbols table with their latest prices
       const { data, error } = await supabase
-        .from('indices_data')
-        .select('symbol, name, price, change_amount, change_percentage, currency, last_updated')
+        .from('symbols')
+        .select(`
+          symbol,
+          name,
+          currency,
+          symbol_prices (
+            price,
+            change_amount,
+            change_percentage,
+            fetched_at
+          ),
+          exchanges (
+            code
+          )
+        `)
         .eq('is_active', true)
+        .in('exchanges.code', ['INDEX', 'SPX', 'NDX', 'DJI']) // Filter for market indices
         .order('symbol');
 
       if (error) {
@@ -44,15 +59,20 @@ export const useMarketData = () => {
         return;
       }
 
-      const marketData: MarketData[] = data.map(item => ({
-        symbol: item.symbol,
-        name: item.name,
-        price: Number(item.price) || 0,
-        change: Number(item.change_amount) || 0,
-        changePercent: Number(item.change_percentage) || 0,
-        currency: item.currency || 'USD',
-        lastUpdated: item.last_updated
-      }));
+      const marketData: MarketData[] = data
+        .filter(item => item.symbol_prices && item.symbol_prices.length > 0)
+        .map(item => {
+          const latestPrice = item.symbol_prices[0];
+          return {
+            symbol: item.symbol,
+            name: item.name,
+            price: Number(latestPrice.price) || 0,
+            change: Number(latestPrice.change_amount) || 0,
+            changePercent: Number(latestPrice.change_percentage) || 0,
+            currency: item.currency || 'USD',
+            lastUpdated: latestPrice.fetched_at
+          };
+        });
 
       console.log('Processed market data:', marketData);
       setMarkets(marketData);

@@ -15,14 +15,13 @@ export const useAutoAddSymbol = () => {
   ) => {
     try {
       setLoading(true);
-      console.log(`Auto-adding symbol: ${symbol} to new schema`);
+      console.log(`Auto-adding symbol: ${symbol} to symbols table`);
       
       // First check if symbol already exists
       const { data: existing, error: checkError } = await supabase
         .from('symbols')
         .select('id')
         .eq('symbol', symbol.toUpperCase())
-        .eq('exchanges.code', exchangeCode)
         .single();
 
       if (existing) {

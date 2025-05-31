@@ -24,9 +24,20 @@ export const useTickerPrices = (symbols: string[]) => {
       setLoading(true);
       console.log('Fetching ticker prices for:', symbols);
 
+      // Query symbol_prices table through symbols table for the requested symbols
       const { data, error } = await supabase
-        .from('tickers_data')
-        .select('symbol, price, change_amount, change_percentage, currency, last_updated')
+        .from('symbols')
+        .select(`
+          symbol,
+          name,
+          currency,
+          symbol_prices (
+            price,
+            change_amount,
+            change_percentage,
+            fetched_at
+          )
+        `)
         .in('symbol', symbols)
         .eq('is_active', true);
 
@@ -39,15 +50,19 @@ export const useTickerPrices = (symbols: string[]) => {
 
       const pricesMap: Record<string, TickerPrice> = {};
       if (data) {
-        data.forEach(ticker => {
-          pricesMap[ticker.symbol] = {
-            symbol: ticker.symbol,
-            price: Number(ticker.price),
-            change_amount: Number(ticker.change_amount),
-            change_percentage: Number(ticker.change_percentage),
-            currency: ticker.currency,
-            last_updated: ticker.last_updated
-          };
+        data.forEach(symbol => {
+          // Get the most recent price data
+          const latestPrice = symbol.symbol_prices?.[0];
+          if (latestPrice) {
+            pricesMap[symbol.symbol] = {
+              symbol: symbol.symbol,
+              price: Number(latestPrice.price),
+              change_amount: Number(latestPrice.change_amount),
+              change_percentage: Number(latestPrice.change_percentage),
+              currency: symbol.currency,
+              last_updated: latestPrice.fetched_at
+            };
+          }
         });
       }
 

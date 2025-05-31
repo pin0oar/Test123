@@ -166,56 +166,6 @@ export type Database = {
           },
         ]
       }
-      indices_data: {
-        Row: {
-          change_amount: number
-          change_percentage: number
-          created_at: string
-          currency: string
-          id: string
-          is_active: boolean
-          last_updated: string
-          name: string
-          price: number
-          symbol: string
-          tracked_index_id: string | null
-        }
-        Insert: {
-          change_amount?: number
-          change_percentage?: number
-          created_at?: string
-          currency?: string
-          id?: string
-          is_active?: boolean
-          last_updated?: string
-          name: string
-          price?: number
-          symbol: string
-          tracked_index_id?: string | null
-        }
-        Update: {
-          change_amount?: number
-          change_percentage?: number
-          created_at?: string
-          currency?: string
-          id?: string
-          is_active?: boolean
-          last_updated?: string
-          name?: string
-          price?: number
-          symbol?: string
-          tracked_index_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "indices_data_tracked_index_id_fkey"
-            columns: ["tracked_index_id"]
-            isOneToOne: false
-            referencedRelation: "tracked_indices"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       portfolios: {
         Row: {
           created_at: string
@@ -406,128 +356,6 @@ export type Database = {
           },
         ]
       }
-      tickers_data: {
-        Row: {
-          change_amount: number
-          change_percentage: number
-          created_at: string
-          currency: string
-          dividend_yield: number | null
-          id: string
-          is_active: boolean
-          is_halal: boolean | null
-          last_updated: string
-          market: string | null
-          name: string
-          price: number
-          symbol: string
-          tracked_ticker_id: string | null
-        }
-        Insert: {
-          change_amount?: number
-          change_percentage?: number
-          created_at?: string
-          currency?: string
-          dividend_yield?: number | null
-          id?: string
-          is_active?: boolean
-          is_halal?: boolean | null
-          last_updated?: string
-          market?: string | null
-          name: string
-          price?: number
-          symbol: string
-          tracked_ticker_id?: string | null
-        }
-        Update: {
-          change_amount?: number
-          change_percentage?: number
-          created_at?: string
-          currency?: string
-          dividend_yield?: number | null
-          id?: string
-          is_active?: boolean
-          is_halal?: boolean | null
-          last_updated?: string
-          market?: string | null
-          name?: string
-          price?: number
-          symbol?: string
-          tracked_ticker_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tickers_data_tracked_ticker_id_fkey"
-            columns: ["tracked_ticker_id"]
-            isOneToOne: false
-            referencedRelation: "tracked_tickers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tracked_indices: {
-        Row: {
-          created_at: string
-          currency: string
-          id: string
-          is_active: boolean
-          name: string
-          symbol: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          currency?: string
-          id?: string
-          is_active?: boolean
-          name: string
-          symbol: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          currency?: string
-          id?: string
-          is_active?: boolean
-          name?: string
-          symbol?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      tracked_tickers: {
-        Row: {
-          created_at: string
-          currency: string
-          id: string
-          is_active: boolean
-          market: string | null
-          name: string
-          symbol: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          currency?: string
-          id?: string
-          is_active?: boolean
-          market?: string | null
-          name: string
-          symbol: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          currency?: string
-          id?: string
-          is_active?: boolean
-          market?: string | null
-          name?: string
-          symbol?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       zakat_calculations: {
         Row: {
           calculation_date: string
@@ -574,15 +402,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      auto_add_ticker: {
-        Args: {
-          p_symbol: string
-          p_name: string
-          p_market?: string
-          p_currency?: string
-        }
-        Returns: string
-      }
       get_symbols_for_price_update: {
         Args: Record<PropertyKey, never>
         Returns: {

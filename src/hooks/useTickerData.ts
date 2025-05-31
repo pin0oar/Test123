@@ -24,57 +24,50 @@ export const useTickerData = (symbol: string | undefined) => {
       try {
         console.log('Fetching ticker data for:', symbol);
         
-        // First, try to get the ticker from tickers_data (with price information)
-        const { data: priceData, error: priceError } = await supabase
-          .from('tickers_data')
-          .select('*')
+        // Fetch ticker from symbols table with latest price data
+        const { data: symbolData, error: symbolError } = await supabase
+          .from('symbols')
+          .select(`
+            symbol,
+            name,
+            currency,
+            symbol_prices (
+              price,
+              change_amount,
+              change_percentage,
+              fetched_at
+            ),
+            exchanges (
+              code,
+              name
+            )
+          `)
           .eq('symbol', symbol.toUpperCase())
           .eq('is_active', true)
           .single();
 
-        if (!priceError && priceData) {
-          console.log('Found ticker in tickers_data:', priceData);
+        if (!symbolError && symbolData) {
+          console.log('Found ticker in symbols table:', symbolData);
+          
+          const latestPrice = symbolData.symbol_prices?.[0];
           setTickerData({
-            symbol: priceData.symbol,
-            name: priceData.name,
-            price: Number(priceData.price),
-            change_amount: Number(priceData.change_amount),
-            change_percentage: Number(priceData.change_percentage),
-            currency: priceData.currency,
-            last_updated: priceData.last_updated,
-            market: priceData.market
+            symbol: symbolData.symbol,
+            name: symbolData.name,
+            price: latestPrice ? Number(latestPrice.price) : 0,
+            change_amount: latestPrice ? Number(latestPrice.change_amount) : 0,
+            change_percentage: latestPrice ? Number(latestPrice.change_percentage) : 0,
+            currency: symbolData.currency,
+            last_updated: latestPrice ? latestPrice.fetched_at : new Date().toISOString(),
+            market: symbolData.exchanges?.name || symbolData.exchanges?.code
           });
           return;
         }
 
-        // If not found in tickers_data, check tracked_tickers for market information
-        console.log('Ticker not found in tickers_data, checking tracked_tickers...');
-        const { data: trackedData, error: trackedError } = await supabase
-          .from('tracked_tickers')
-          .select('*')
-          .eq('symbol', symbol.toUpperCase())
-          .eq('is_active', true)
-          .single();
-
-        if (!trackedError && trackedData) {
-          console.log('Found ticker in tracked_tickers:', trackedData);
-          // Return basic ticker info from tracked_tickers without price data
-          setTickerData({
-            symbol: trackedData.symbol,
-            name: trackedData.name,
-            price: 0,
-            change_amount: 0,
-            change_percentage: 0,
-            currency: trackedData.currency,
-            last_updated: new Date().toISOString(),
-            market: trackedData.market
-          });
-          return;
-        }
-
-        console.log('Ticker not found in either table');
+        console.log('Ticker not found in symbols table');
+        setTickerData(null);
       } catch (error) {
         console.error('Error:', error);
+        setTickerData(null);
       } finally {
         setLoading(false);
       }
