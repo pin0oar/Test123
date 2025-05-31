@@ -4,69 +4,68 @@ import { supabase } from '@/integrations/supabase/client';
 import { useFinnhub } from './useFinnhub';
 import { useToast } from '@/hooks/use-toast';
 
-// Mapping from our tracked symbols to Finnhub symbols
-const SYMBOL_MAPPING: Record<string, string> = {
-  'SPX': '^GSPC',
-  'IXIC': '^IXIC', 
-  'DJI': '^DJI',
-  'UKX': '^FTSE',
-  'DAX': '^GDAXI',
-  'TASI': 'TASI.SR'
-};
-
 export const useDataSync = () => {
   const [syncing, setSyncing] = useState(false);
   const { getMarketData } = useFinnhub();
   const { toast } = useToast();
 
-  const autoAddTicker = async (symbol: string, name: string, market?: string, currency: string = 'USD') => {
+  const autoAddSymbol = async (symbol: string, name: string, exchangeCode: string = 'NYSE', currency: string = 'USD') => {
     try {
-      console.log(`Auto-adding ticker: ${symbol}`);
+      console.log(`Auto-adding symbol: ${symbol} to symbols table`);
       
-      const { data, error } = await supabase.rpc('auto_add_ticker', {
-        p_symbol: symbol,
-        p_name: name,
-        p_market: market,
-        p_currency: currency
-      });
+      // First check if symbol already exists
+      const { data: existing, error: checkError } = await supabase
+        .from('symbols')
+        .select('id')
+        .eq('symbol', symbol.toUpperCase())
+        .single();
 
-      if (error) {
-        console.error('Error auto-adding ticker:', error);
-        throw error;
+      if (existing) {
+        console.log('Symbol already exists:', existing.id);
+        return existing.id;
       }
 
-      console.log(`Ticker ${symbol} auto-added with ID:`, data);
-      return data;
+      // Get exchange ID
+      const { data: exchange, error: exchangeError } = await supabase
+        .from('exchanges')
+        .select('id')
+        .eq('code', exchangeCode)
+        .single();
+
+      if (exchangeError) {
+        throw new Error(`Exchange ${exchangeCode} not found`);
+      }
+
+      // Add new symbol
+      const { data, error } = await supabase
+        .from('symbols')
+        .insert([{
+          symbol: symbol.toUpperCase(),
+          name: name,
+          exchange_id: exchange.id,
+          currency: currency,
+          is_in_portfolio: false,
+          is_active: true
+        }])
+        .select('id')
+        .single();
+
+      if (error) throw error;
+
+      console.log('Symbol added successfully:', data.id);
+      return data.id;
     } catch (error) {
-      console.error('Failed to auto-add ticker:', error);
+      console.error('Failed to auto-add symbol:', error);
       throw error;
     }
   };
 
-  const syncIndicesData = async () => {
+  const syncMarketData = async () => {
     try {
       setSyncing(true);
-      console.log('Starting indices data sync using Finnhub...');
+      console.log('Starting market data sync using Finnhub...');
 
-      // 1. Get all active tracked indices
-      const { data: trackedIndices, error: fetchError } = await supabase
-        .from('tracked_indices')
-        .select('*')
-        .eq('is_active', true);
-
-      if (fetchError) {
-        console.error('Error fetching tracked indices:', fetchError);
-        throw fetchError;
-      }
-
-      if (!trackedIndices || trackedIndices.length === 0) {
-        console.log('No tracked indices found');
-        return;
-      }
-
-      console.log('Found tracked indices:', trackedIndices);
-
-      // 2. Fetch data from Finnhub
+      // Get market data from Finnhub
       const marketData = await getMarketData();
       console.log('Market data from Finnhub:', marketData);
 
@@ -74,61 +73,63 @@ export const useDataSync = () => {
         throw new Error('No market data received from Finnhub');
       }
 
-      // 3. Process and update indices_data table
+      // Update symbols that have corresponding data
       const updates = [];
       
-      for (const trackedIndex of trackedIndices) {
-        const finnhubSymbol = SYMBOL_MAPPING[trackedIndex.symbol] || trackedIndex.symbol;
-        let finnhubData = marketData.find(data => 
-          data.symbol === trackedIndex.symbol || data.symbol === finnhubSymbol.replace('^', '')
-        );
+      for (const data of marketData) {
+        // Find the symbol in our database
+        const { data: symbolData, error: symbolError } = await supabase
+          .from('symbols')
+          .select('id, symbol')
+          .eq('symbol', data.symbol.toUpperCase())
+          .eq('is_active', true)
+          .single();
 
-        if (finnhubData) {
-          const updateData = {
-            symbol: trackedIndex.symbol,
-            name: trackedIndex.name,
-            price: finnhubData.price,
-            change_amount: finnhubData.change,
-            change_percentage: finnhubData.changePercent,
-            currency: trackedIndex.currency,
-            last_updated: new Date().toISOString(),
-            is_active: true,
-            tracked_index_id: trackedIndex.id
+        if (symbolData && !symbolError) {
+          // Update or insert price data
+          const priceUpdate = {
+            symbol_id: symbolData.id,
+            price: data.price,
+            change_amount: data.change,
+            change_percentage: data.changePercent,
+            data_source: 'finnhub',
+            market_session: 'regular',
+            fetched_at: new Date().toISOString()
           };
 
-          console.log('Preparing update for:', trackedIndex.symbol, updateData);
-          updates.push(updateData);
+          console.log('Updating price for:', symbolData.symbol, priceUpdate);
+          updates.push(priceUpdate);
         }
       }
 
       if (updates.length === 0) {
-        throw new Error('No matching data found for tracked indices');
+        throw new Error('No matching symbols found for market data');
       }
 
-      // 4. Upsert data into indices_data table
+      // Upsert price data
       const { error: upsertError } = await supabase
-        .from('indices_data')
+        .from('symbol_prices')
         .upsert(updates, { 
-          onConflict: 'symbol',
+          onConflict: 'symbol_id',
           ignoreDuplicates: false 
         });
 
       if (upsertError) {
-        console.error('Error upserting indices data:', upsertError);
+        console.error('Error upserting price data:', upsertError);
         throw upsertError;
       }
 
-      console.log(`Successfully synced ${updates.length} indices from Finnhub`);
+      console.log(`Successfully synced ${updates.length} symbols from Finnhub`);
       
       toast({
         title: 'Success',
-        description: `Synced ${updates.length} market indices from Finnhub`,
+        description: `Synced ${updates.length} symbols from Finnhub`,
       });
 
       return updates.length;
 
     } catch (error) {
-      console.error('Error syncing indices data:', error);
+      console.error('Error syncing market data:', error);
       toast({
         title: 'Sync Error',
         description: error.message || 'Failed to sync market data',
@@ -141,8 +142,8 @@ export const useDataSync = () => {
   };
 
   return {
-    syncIndicesData,
-    autoAddTicker,
+    syncMarketData,
+    autoAddSymbol,
     syncing
   };
 };

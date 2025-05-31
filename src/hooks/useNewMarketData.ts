@@ -25,7 +25,7 @@ export const useNewMarketData = () => {
       setLoading(true);
       console.log('Fetching market data from new schema...');
       
-      // First try to get data from the new schema for market indices
+      // Get data from the new schema for market indices and major stocks
       const { data: newData, error: newError } = await supabase
         .from('symbols')
         .select(`
@@ -43,7 +43,7 @@ export const useNewMarketData = () => {
             fetched_at
           )
         `)
-        .in('exchanges.code', ['NYSE', 'NASDAQ', 'TADAWUL', 'LSE'])
+        .in('exchanges.code', ['NYSE', 'NASDAQ', 'TADAWUL', 'LSE', 'INDEX'])
         .eq('is_active', true)
         .order('fetched_at', { foreignTable: 'symbol_prices', ascending: false })
         .limit(1, { foreignTable: 'symbol_prices' });
@@ -67,46 +67,11 @@ export const useNewMarketData = () => {
 
         setMarkets(marketData);
         setLastUpdated(new Date());
-        setLoading(false);
         return;
       }
 
-      console.log('No market data in new schema, falling back to indices_data...');
-      
-      // Fallback to old indices_data table
-      const { data, error } = await supabase
-        .from('indices_data')
-        .select('symbol, name, price, change_amount, change_percentage, currency, last_updated')
-        .eq('is_active', true)
-        .order('symbol');
-
-      if (error) {
-        console.error('Error fetching market data:', error);
-        throw error;
-      }
-
-      console.log('Raw data from indices_data:', data);
-
-      if (!data || data.length === 0) {
-        console.log('No market data found in indices_data');
-        setMarkets([]);
-        setLastUpdated(new Date());
-        return;
-      }
-
-      const marketData: NewMarketData[] = data.map(item => ({
-        symbol: item.symbol,
-        name: item.name,
-        price: Number(item.price) || 0,
-        change: Number(item.change_amount) || 0,
-        changePercent: Number(item.change_percentage) || 0,
-        currency: item.currency || 'USD',
-        lastUpdated: item.last_updated,
-        exchange_code: 'INDEX' // Default for indices
-      }));
-
-      console.log('Processed market data:', marketData);
-      setMarkets(marketData);
+      console.log('No market data found');
+      setMarkets([]);
       setLastUpdated(new Date());
       
     } catch (error) {
