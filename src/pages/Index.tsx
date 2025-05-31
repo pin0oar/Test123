@@ -1,72 +1,99 @@
 
-import { ModernSidebar } from '@/components/layout/ModernSidebar';
+// Import React hooks and components
+import { useState, useEffect } from 'react';
+
+// Import layout components
 import { ModernHeader } from '@/components/layout/ModernHeader';
+import { ModernSidebar } from '@/components/layout/ModernSidebar';
+
+// Import dashboard-specific components
+import { PortfolioOverview } from '@/components/dashboard/PortfolioOverview';
+import { PerformanceTimeline } from '@/components/dashboard/PerformanceTimeline';
 import { PortfolioSummary } from '@/components/dashboard/PortfolioSummary';
-import { MarketOverview } from '@/components/dashboard/MarketOverview';
-import { SaudiExchangeScraper } from '@/components/dashboard/SaudiExchangeScraper';
 import { QuickActions } from '@/components/dashboard/QuickActions';
+import { MarketOverview } from '@/components/dashboard/MarketOverview';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
+
+// Import custom hooks
+import { useLanguage } from '@/hooks/useLanguage';
 import { usePortfolios } from '@/hooks/usePortfolios';
 
+// Main dashboard page component
 const Index = () => {
-  // Hook to manage portfolio data and operations
-  const { portfolios, addPortfolio } = usePortfolios();
+  // Get current language setting (for potential future use)
+  const { language } = useLanguage();
+  
+  // Get portfolio data and functions from custom hook
+  const { 
+    portfolios,           // Array of user's portfolios
+    totalValue,          // Sum of all portfolio values
+    totalPnL,            // Total profit/loss across all portfolios
+    totalPnLPercentage,  // Total P&L as a percentage
+    addPortfolio         // Function to create new portfolios
+  } = usePortfolios();
 
   // Handler function for adding new portfolios
-  const handleAddPortfolio = (portfolio: { name: string; description?: string; tickers?: string }) => {
+  const handleAddPortfolio = (portfolioData: { name: string; description?: string; tickers?: string }) => {
+    // Call the addPortfolio function with portfolio data structure
     addPortfolio({
-      name: portfolio.name,
-      description: portfolio.description,
-      totalValue: 0,
-      totalPnL: 0,
-      totalPnLPercentage: 0
+      name: portfolioData.name,
+      description: portfolioData.description,
+      totalValue: 0,        // New portfolios start with 0 value
+      totalPnL: 0,          // No profit/loss initially
+      totalPnLPercentage: 0 // 0% change initially
     });
   };
 
   return (
-    // Main application container with flex layout for sidebar and content
-    <div className="flex min-h-screen bg-background">
-      {/* Left sidebar for navigation - fixed width */}
+    // Main container with light background and flex layout
+    <div className="min-h-screen bg-slate-50 flex">
+      
+      {/* Left sidebar for navigation */}
       <ModernSidebar />
       
-      {/* Main content area - flexible width */}
+      {/* Main content area */}
       <div className="flex-1 flex flex-col">
+        
         {/* Top header bar */}
         <ModernHeader />
         
-        {/* Main dashboard content with padding and scrollable area */}
-        <main className="flex-1 p-6 overflow-auto">
-          {/* Dashboard grid layout - responsive columns */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {/* Main dashboard content with padding and spacing */}
+        <main className="flex-1 p-6 space-y-6 overflow-auto">
+          
+          {/* Top section: Portfolio overview cards showing key metrics */}
+          <PortfolioOverview 
+            totalValue={totalValue}
+            totalPnL={totalPnL}
+            totalPnLPercentage={totalPnLPercentage}
+            portfolioCount={portfolios.length}
+          />
+
+          {/* Performance chart section */}
+          <PerformanceTimeline totalValue={totalValue} />
+
+          {/* Grid layout for main content and sidebar */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {/* Portfolio summary card - spans full width on large screens */}
-            <div className="lg:col-span-2 xl:col-span-3">
+            {/* Left side: Main dashboard content (takes 2/3 of space on large screens) */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Portfolio summary table */}
               <PortfolioSummary 
                 portfolios={portfolios} 
-                onAddPortfolio={handleAddPortfolio}
+                onAddPortfolio={handleAddPortfolio} 
               />
-            </div>
-            
-            {/* Market overview - shows stock prices and market data */}
-            <div className="lg:col-span-1">
-              <MarketOverview />
-            </div>
-
-            {/* Saudi Exchange Scraper - new component for Saudi market data */}
-            <div className="lg:col-span-1">
-              <SaudiExchangeScraper />
-            </div>
-            
-            {/* Quick actions panel - shortcuts for common tasks */}
-            <div className="lg:col-span-1">
+              
+              {/* Quick action buttons for common tasks */}
               <QuickActions onAddPortfolio={handleAddPortfolio} />
             </div>
-            
-            {/* Recent activity feed - spans remaining width */}
-            <div className="lg:col-span-2 xl:col-span-3">
+
+            {/* Right side: Secondary content (takes 1/3 of space on large screens) */}
+            <div className="space-y-6">
+              {/* Market overview widget */}
+              <MarketOverview />
+              
+              {/* Recent activity feed */}
               <RecentActivity />
             </div>
-            
           </div>
         </main>
       </div>
@@ -74,4 +101,5 @@ const Index = () => {
   );
 };
 
+// Export the component as default
 export default Index;
