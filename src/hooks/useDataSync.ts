@@ -205,7 +205,7 @@ export const useDataSync = () => {
       console.error('Error syncing market data:', error);
       toast({
         title: 'Sync Error',
-        description: error.message || 'Failed to sync market data',
+        description: error instanceof Error ? error.message : 'Failed to sync market data',
         variant: 'destructive'
       });
       throw error;
