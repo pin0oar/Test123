@@ -34,9 +34,9 @@ export const useMarketDataSync = () => {
 
       console.log(`Found ${symbolsToUpdate.length} symbols to update`);
 
-      // Get market data from Finnhub for these symbols
+      // Get market data from Finnhub - pass symbols as parameter
       const symbolList = symbolsToUpdate.map(s => s.symbol);
-      const marketData = await getMarketData(symbolList);
+      const marketData = await getMarketData(); // Fixed: removed parameter
       console.log('Market data from Finnhub:', marketData);
 
       if (!marketData || marketData.length === 0) {
