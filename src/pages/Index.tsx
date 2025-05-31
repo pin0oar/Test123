@@ -6,8 +6,17 @@ import { MarketOverview } from '@/components/dashboard/MarketOverview';
 import { SaudiExchangeScraper } from '@/components/dashboard/SaudiExchangeScraper';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
+import { usePortfolios } from '@/hooks/usePortfolios';
 
 const Index = () => {
+  // Hook to manage portfolio data and operations
+  const { portfolios, addPortfolio } = usePortfolios();
+
+  // Handler function for adding new portfolios
+  const handleAddPortfolio = (portfolio: { name: string; description?: string; tickers?: string }) => {
+    addPortfolio(portfolio);
+  };
+
   return (
     // Main application container with flex layout for sidebar and content
     <div className="flex min-h-screen bg-background">
@@ -26,7 +35,10 @@ const Index = () => {
             
             {/* Portfolio summary card - spans full width on large screens */}
             <div className="lg:col-span-2 xl:col-span-3">
-              <PortfolioSummary />
+              <PortfolioSummary 
+                portfolios={portfolios} 
+                onAddPortfolio={handleAddPortfolio}
+              />
             </div>
             
             {/* Market overview - shows stock prices and market data */}
@@ -41,7 +53,7 @@ const Index = () => {
             
             {/* Quick actions panel - shortcuts for common tasks */}
             <div className="lg:col-span-1">
-              <QuickActions />
+              <QuickActions onAddPortfolio={handleAddPortfolio} />
             </div>
             
             {/* Recent activity feed - spans remaining width */}
