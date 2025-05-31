@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -48,10 +47,11 @@ serve(async (req) => {
       );
     }
 
-    const url = new URL(req.url);
-    const action = url.searchParams.get('action');
+    // Parse request body
+    const body = await req.json();
+    const action = body.action;
     
-    console.log(`MarketAux API request: ${action}`);
+    console.log(`MarketAux API request: ${action}`, body);
 
     const makeMarketAuxRequest = async (endpoint: string, params: Record<string, string> = {}) => {
       const apiUrl = new URL(`https://api.marketaux.com/v1/${endpoint}`);
@@ -81,7 +81,7 @@ serve(async (req) => {
 
     switch (action) {
       case 'search': {
-        const query = url.searchParams.get('query');
+        const query = body.query;
         if (!query) {
           return new Response(
             JSON.stringify({ error: 'Query parameter required for search' }),
@@ -117,7 +117,7 @@ serve(async (req) => {
       }
 
       case 'quotes': {
-        const symbolsParam = url.searchParams.get('symbols');
+        const symbolsParam = body.symbols;
         if (!symbolsParam) {
           return new Response(
             JSON.stringify({ error: 'Symbols parameter required for quotes' }),

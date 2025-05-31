@@ -29,35 +29,12 @@ export const useMarketAux = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const callMarketAuxFunction = async (action: string, params: Record<string, string> = {}) => {
-    console.log(`Calling MarketAux edge function: ${action}`, params);
-
-    const { data, error } = await supabase.functions.invoke('marketaux-api', {
-      body: JSON.stringify({ action, params })
-    });
-
-    if (error) {
-      console.error('MarketAux edge function error:', error);
-      throw new Error(error.message || 'Failed to call MarketAux API');
-    }
-
-    return data;
-  };
-
   const searchSymbols = async (query: string): Promise<MarketAuxSymbol[]> => {
     try {
       setLoading(true);
       
-      // Build URL with query parameters
-      const url = new URL(window.location.origin);
-      url.searchParams.set('action', 'search');
-      url.searchParams.set('query', query);
-      
       const { data, error } = await supabase.functions.invoke('marketaux-api', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        body: JSON.stringify({ action: 'search', query })
       });
 
       if (error) {
@@ -83,10 +60,7 @@ export const useMarketAux = () => {
       setLoading(true);
       
       const { data, error } = await supabase.functions.invoke('marketaux-api', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        body: JSON.stringify({ action: 'quotes', symbols: symbols.join(',') })
       });
 
       if (error) {
@@ -112,10 +86,7 @@ export const useMarketAux = () => {
       setLoading(true);
       
       const { data, error } = await supabase.functions.invoke('marketaux-api', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        body: JSON.stringify({ action: 'market-data' })
       });
 
       if (error) {
