@@ -62,6 +62,7 @@ serve(async (req) => {
       }
 
       console.log(`Making MarketAux request to: ${endpoint} with params:`, params);
+      console.log(`Full URL: ${apiUrl.toString()}`);
 
       const response = await fetch(apiUrl.toString(), {
         method: 'GET',
@@ -73,6 +74,7 @@ serve(async (req) => {
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.error(`MarketAux API error: ${response.status} - ${errorText}`);
         throw new Error(`MarketAux API error: ${response.status} - ${errorText}`);
       }
 
@@ -128,7 +130,8 @@ serve(async (req) => {
           );
         }
 
-        const data = await makeMarketAuxRequest('quotes', {
+        // Use the correct endpoint for real-time quotes
+        const data = await makeMarketAuxRequest('real-time', {
           symbols: symbolsParam
         });
 
@@ -156,7 +159,7 @@ serve(async (req) => {
       case 'market-data': {
         // Get major market indices
         const majorIndices = ['SPY', 'QQQ', 'DIA', 'IWM', 'VTI', 'EFA'];
-        const data = await makeMarketAuxRequest('quotes', {
+        const data = await makeMarketAuxRequest('real-time', {
           symbols: majorIndices.join(',')
         });
 
