@@ -48,14 +48,16 @@ export const useMarketAux = () => {
     try {
       setLoading(true);
       
+      // Build URL with query parameters
+      const url = new URL(window.location.origin);
+      url.searchParams.set('action', 'search');
+      url.searchParams.set('query', query);
+      
       const { data, error } = await supabase.functions.invoke('marketaux-api', {
-        body: null,
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
         }
-      }, {
-        query: { action: 'search', query }
       });
 
       if (error) {
@@ -81,13 +83,10 @@ export const useMarketAux = () => {
       setLoading(true);
       
       const { data, error } = await supabase.functions.invoke('marketaux-api', {
-        body: null,
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
         }
-      }, {
-        query: { action: 'quotes', symbols: symbols.join(',') }
       });
 
       if (error) {
@@ -113,13 +112,10 @@ export const useMarketAux = () => {
       setLoading(true);
       
       const { data, error } = await supabase.functions.invoke('marketaux-api', {
-        body: null,
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
         }
-      }, {
-        query: { action: 'market-data' }
       });
 
       if (error) {
