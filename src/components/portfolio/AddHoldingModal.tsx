@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -39,20 +38,24 @@ export const AddHoldingModal = ({ isOpen, onClose, portfolio, onHoldingAdded }: 
 
     try {
       setLoading(true);
+      console.log(`Adding holding for ${selectedTicker.symbol} to portfolio ${portfolio.name}`);
 
       // Auto-add ticker to symbols table and get the symbol_id
+      console.log('Step 1: Adding ticker to symbols table...');
       const symbolId = await addTickerIfNotExists(
         selectedTicker.symbol,
         selectedTicker.name,
         selectedTicker.exchange,
         'USD'
       );
+      console.log('Step 1 completed: Symbol ID =', symbolId);
 
       // Calculate total value and basic PnL (using avg price as current price for now)
       const qty = parseInt(quantity);
       const price = parseFloat(avgPrice);
       const totalValue = qty * price;
 
+      console.log('Step 2: Adding holding to portfolio...');
       // Add holding to portfolio with symbol_id
       const { error } = await supabase
         .from('holdings')
@@ -72,7 +75,12 @@ export const AddHoldingModal = ({ isOpen, onClose, portfolio, onHoldingAdded }: 
           symbol_id: symbolId // Ensure symbol_id is set
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding holding to portfolio:', error);
+        throw new Error(`Failed to add holding to portfolio: ${error.message}`);
+      }
+
+      console.log('Step 2 completed: Holding added successfully');
 
       toast({
         title: 'Success',
@@ -89,10 +97,24 @@ export const AddHoldingModal = ({ isOpen, onClose, portfolio, onHoldingAdded }: 
       onClose();
 
     } catch (error) {
-      console.error('Error adding holding:', error);
+      console.error('Error in handleSubmit:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to add holding to portfolio';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Symbol creation failed')) {
+          errorMessage = `Failed to add symbol ${selectedTicker?.symbol}: ${error.message}`;
+        } else if (error.message.includes('Exchange')) {
+          errorMessage = `Exchange error: ${error.message}`;
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: 'Error',
-        description: 'Failed to add holding to portfolio',
+        description: errorMessage,
         variant: 'destructive'
       });
     } finally {

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useFinnhub } from './useFinnhub';
@@ -32,7 +31,8 @@ export const useDataSync = () => {
         .maybeSingle();
 
       if (checkError && !checkError.message.includes('No rows found')) {
-        throw checkError;
+        console.error('Error checking existing symbol:', checkError);
+        throw new Error(`Failed to check existing symbol: ${checkError.message}`);
       }
 
       if (existing) {
@@ -48,7 +48,8 @@ export const useDataSync = () => {
         .maybeSingle();
 
       if (exchangeError && !exchangeError.message.includes('No rows found')) {
-        throw exchangeError;
+        console.error('Error checking exchange:', exchangeError);
+        throw new Error(`Failed to check exchange: ${exchangeError.message}`);
       }
 
       if (!exchange) {
@@ -67,6 +68,7 @@ export const useDataSync = () => {
           .single();
 
         if (createError) {
+          console.error('Error creating exchange:', createError);
           throw new Error(`Failed to create exchange ${symbolInfo.exchangeCode}: ${createError.message}`);
         }
 
@@ -84,7 +86,10 @@ export const useDataSync = () => {
           .select('id')
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error creating symbol with new exchange:', error);
+          throw new Error(`Failed to create symbol: ${error.message}`);
+        }
 
         console.log('Symbol added successfully with new exchange:', data.id);
         return data.id;
@@ -104,13 +109,22 @@ export const useDataSync = () => {
         .select('id')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating symbol with existing exchange:', error);
+        throw new Error(`Failed to create symbol: ${error.message}`);
+      }
 
       console.log('Symbol added successfully:', data.id);
       return data.id;
     } catch (error) {
       console.error('Failed to auto-add symbol:', error);
-      throw error;
+      
+      // Improve error handling with specific error types
+      if (error instanceof Error) {
+        throw new Error(`Symbol creation failed for ${symbol}: ${error.message}`);
+      } else {
+        throw new Error(`Symbol creation failed for ${symbol}: Unknown error`);
+      }
     }
   };
 
