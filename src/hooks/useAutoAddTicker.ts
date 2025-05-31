@@ -1,12 +1,12 @@
 
 import { useState } from 'react';
-import { useDataSync } from './useDataSync';
+import { useSymbolCreation } from './useSymbolCreation';
 import { useToast } from '@/hooks/use-toast';
 import { detectSymbolInfo } from './useSmartSymbolDetection';
 
 export const useAutoAddTicker = () => {
   const [loading, setLoading] = useState(false);
-  const { autoAddSymbol } = useDataSync();
+  const { autoAddSymbol } = useSymbolCreation();
   const { toast } = useToast();
 
   const addTickerIfNotExists = async (symbol: string, name: string, exchangeCode?: string, currency?: string) => {
