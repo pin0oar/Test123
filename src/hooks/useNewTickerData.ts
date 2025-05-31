@@ -80,32 +80,7 @@ export const useNewTickerData = (symbol: string | undefined) => {
           return;
         }
 
-        console.log('Ticker not found in new schema, falling back to old tables...');
-        
-        // Fallback to old tickers_data table
-        const { data: oldData, error: oldError } = await supabase
-          .from('tickers_data')
-          .select('*')
-          .eq('symbol', symbol.toUpperCase())
-          .eq('is_active', true)
-          .single();
-
-        if (!oldError && oldData) {
-          console.log('Found ticker in old tickers_data:', oldData);
-          setTickerData({
-            symbol: oldData.symbol,
-            name: oldData.name,
-            price: Number(oldData.price),
-            change_amount: Number(oldData.change_amount),
-            change_percentage: Number(oldData.change_percentage),
-            currency: oldData.currency,
-            last_updated: oldData.last_updated,
-            market: oldData.market
-          });
-          return;
-        }
-
-        console.log('Ticker not found in either table');
+        console.log('Ticker not found in symbols table');
         setTickerData(null);
       } catch (error) {
         console.error('Error fetching ticker data:', error);
