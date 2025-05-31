@@ -2,13 +2,13 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useFinnhub } from '@/hooks/useFinnhub';
-import { TrendingUp, TrendingDown, Database, RefreshCw, Download, AlertTriangle } from 'lucide-react';
+import { useMarketAux } from '@/hooks/useMarketAux';
+import { TrendingUp, TrendingDown, Database, RefreshCw, Download } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export const MarketOverview = () => {
   const { t } = useLanguage();
-  const { getQuotes, loading } = useFinnhub();
+  const { getQuotes, loading } = useMarketAux();
   const [tickers, setTickers] = useState<any[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
@@ -17,10 +17,22 @@ export const MarketOverview = () => {
 
   const fetchTickerData = async () => {
     try {
-      console.log('Fetching ticker data from Finnhub...');
+      console.log('Fetching ticker data from MarketAux...');
       const quotes = await getQuotes(testSymbols);
       console.log('Received ticker quotes:', quotes);
-      setTickers(quotes);
+      
+      // Transform MarketAux data to match the existing format
+      const transformedTickers = quotes.map(quote => ({
+        symbol: quote.symbol,
+        regularMarketPrice: quote.price,
+        regularMarketChange: quote.change,
+        regularMarketChangePercent: quote.change_percent,
+        currency: quote.currency,
+        shortName: quote.name,
+        longName: quote.name
+      }));
+      
+      setTickers(transformedTickers);
       setLastUpdated(new Date());
     } catch (error) {
       console.error('Error fetching ticker data:', error);
@@ -61,34 +73,20 @@ export const MarketOverview = () => {
     }
   };
 
-  // Check if we're using fallback data
-  const isUsingFallbackData = tickers.some(ticker => 
-    ticker.regularMarketPrice === 0 || (ticker.regularMarketPrice && ticker.regularMarketPrice % 1 === 0)
-  );
-
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Ticker Overview (Test)
+          Market Overview
         </h3>
         
         <div className="flex items-center space-x-2">
           <div className="flex items-center space-x-1">
             <Database className="h-4 w-4 text-blue-500" />
             <span className="text-xs font-medium text-blue-600">
-              Finnhub
+              MarketAux
             </span>
           </div>
-          
-          {isUsingFallbackData && (
-            <div className="flex items-center space-x-1">
-              <AlertTriangle className="h-4 w-4 text-orange-500" />
-              <span className="text-xs font-medium text-orange-600">
-                Fallback
-              </span>
-            </div>
-          )}
           
           <Button
             variant="ghost"
@@ -115,7 +113,7 @@ export const MarketOverview = () => {
             No ticker data available
           </div>
           <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Click refresh to fetch data from Finnhub
+            Click refresh to fetch data from MarketAux
           </div>
           <div className="flex justify-center space-x-2 mt-2">
             <Button 
@@ -178,7 +176,7 @@ export const MarketOverview = () => {
       
       <div className="flex items-center justify-between mt-4 text-xs text-gray-500 dark:text-gray-400">
         <span>
-          {isUsingFallbackData ? 'Fallback data' : 'Data from Finnhub'}
+          Data from MarketAux
         </span>
         {lastUpdated && (
           <span>

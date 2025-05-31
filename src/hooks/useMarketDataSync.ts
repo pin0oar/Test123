@@ -1,18 +1,18 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useFinnhub } from './useFinnhub';
+import { useMarketAux } from './useMarketAux';
 import { useToast } from '@/hooks/use-toast';
 
 export const useMarketDataSync = () => {
   const [syncing, setSyncing] = useState(false);
-  const { getMarketData } = useFinnhub();
+  const { getQuotes } = useMarketAux();
   const { toast } = useToast();
 
   const syncMarketData = async () => {
     try {
       setSyncing(true);
-      console.log('Starting market data sync using Finnhub...');
+      console.log('Starting market data sync using MarketAux...');
 
       // Get symbols that need price updates using the new database function
       const { data: symbolsToUpdate, error: symbolsError } = await supabase
@@ -34,13 +34,13 @@ export const useMarketDataSync = () => {
 
       console.log(`Found ${symbolsToUpdate.length} symbols to update`);
 
-      // Get market data from Finnhub - pass symbols as parameter
+      // Get market data from MarketAux
       const symbolList = symbolsToUpdate.map(s => s.symbol);
-      const marketData = await getMarketData(); // Fixed: removed parameter
-      console.log('Market data from Finnhub:', marketData);
+      const marketData = await getQuotes(symbolList);
+      console.log('Market data from MarketAux:', marketData);
 
       if (!marketData || marketData.length === 0) {
-        throw new Error('No market data received from Finnhub');
+        throw new Error('No market data received from MarketAux');
       }
 
       // Update symbols that have corresponding data
@@ -56,8 +56,8 @@ export const useMarketDataSync = () => {
             symbol_id: symbolInfo.symbol_id,
             price: data.price,
             change_amount: data.change,
-            change_percentage: data.changePercent,
-            data_source: 'finnhub',
+            change_percentage: data.change_percent,
+            data_source: 'marketaux',
             market_session: 'regular',
             fetched_at: new Date().toISOString()
           };
@@ -87,11 +87,11 @@ export const useMarketDataSync = () => {
         throw upsertError;
       }
 
-      console.log(`Successfully synced ${updates.length} symbols from Finnhub`);
+      console.log(`Successfully synced ${updates.length} symbols from MarketAux`);
       
       toast({
         title: 'Success',
-        description: `Synced ${updates.length} symbols from Finnhub`,
+        description: `Synced ${updates.length} symbols from MarketAux`,
       });
 
       return updates.length;
