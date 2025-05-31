@@ -3,47 +3,96 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useFinnhub } from './useFinnhub';
 import { useToast } from '@/hooks/use-toast';
+import { detectSymbolInfo } from './useSmartSymbolDetection';
 
 export const useDataSync = () => {
   const [syncing, setSyncing] = useState(false);
   const { getMarketData } = useFinnhub();
   const { toast } = useToast();
 
-  const autoAddSymbol = async (symbol: string, name: string, exchangeCode: string = 'NYSE', currency: string = 'USD') => {
+  const autoAddSymbol = async (symbol: string, name: string, exchangeCode?: string, currency?: string) => {
     try {
       console.log(`Auto-adding symbol: ${symbol} to symbols table`);
+      
+      // Auto-detect if not provided
+      const symbolInfo = exchangeCode && currency 
+        ? { exchangeCode, currency }
+        : detectSymbolInfo(symbol);
       
       // First check if symbol already exists
       const { data: existing, error: checkError } = await supabase
         .from('symbols')
         .select('id')
         .eq('symbol', symbol.toUpperCase())
-        .single();
+        .maybeSingle();
+
+      if (checkError && !checkError.message.includes('No rows found')) {
+        throw checkError;
+      }
 
       if (existing) {
         console.log('Symbol already exists:', existing.id);
         return existing.id;
       }
 
-      // Get exchange ID
+      // Get exchange ID - with better error handling
       const { data: exchange, error: exchangeError } = await supabase
         .from('exchanges')
         .select('id')
-        .eq('code', exchangeCode)
-        .single();
+        .eq('code', symbolInfo.exchangeCode)
+        .maybeSingle();
 
-      if (exchangeError) {
-        throw new Error(`Exchange ${exchangeCode} not found`);
+      if (exchangeError && !exchangeError.message.includes('No rows found')) {
+        throw exchangeError;
       }
 
-      // Add new symbol
+      if (!exchange) {
+        // Try to create the exchange if it doesn't exist
+        console.log(`Exchange ${symbolInfo.exchangeCode} not found, creating it...`);
+        const { data: newExchange, error: createError } = await supabase
+          .from('exchanges')
+          .insert([{
+            code: symbolInfo.exchangeCode,
+            name: symbolInfo.exchangeCode,
+            country: symbolInfo.exchangeCode === 'TADAWUL' ? 'SA' : 'US',
+            currency: symbolInfo.currency,
+            timezone: symbolInfo.exchangeCode === 'TADAWUL' ? 'Asia/Riyadh' : 'America/New_York'
+          }])
+          .select('id')
+          .single();
+
+        if (createError) {
+          throw new Error(`Failed to create exchange ${symbolInfo.exchangeCode}: ${createError.message}`);
+        }
+
+        // Add new symbol with the newly created exchange
+        const { data, error } = await supabase
+          .from('symbols')
+          .insert([{
+            symbol: symbol.toUpperCase(),
+            name: name,
+            exchange_id: newExchange.id,
+            currency: symbolInfo.currency,
+            is_in_portfolio: false,
+            is_active: true
+          }])
+          .select('id')
+          .single();
+
+        if (error) throw error;
+
+        console.log('Symbol added successfully with new exchange:', data.id);
+        return data.id;
+      }
+
+      // Add new symbol with existing exchange
       const { data, error } = await supabase
         .from('symbols')
         .insert([{
           symbol: symbol.toUpperCase(),
           name: name,
           exchange_id: exchange.id,
-          currency: currency,
+          currency: symbolInfo.currency,
           is_in_portfolio: false,
           is_active: true
         }])
@@ -83,9 +132,14 @@ export const useDataSync = () => {
           .select('id, symbol')
           .eq('symbol', data.symbol.toUpperCase())
           .eq('is_active', true)
-          .single();
+          .maybeSingle();
 
-        if (symbolData && !symbolError) {
+        if (symbolError && !symbolError.message.includes('No rows found')) {
+          console.error('Error looking up symbol:', symbolError);
+          continue;
+        }
+
+        if (symbolData) {
           // Update or insert price data
           const priceUpdate = {
             symbol_id: symbolData.id,
@@ -99,11 +153,14 @@ export const useDataSync = () => {
 
           console.log('Updating price for:', symbolData.symbol, priceUpdate);
           updates.push(priceUpdate);
+        } else {
+          console.log(`Symbol ${data.symbol} not found in database, skipping...`);
         }
       }
 
       if (updates.length === 0) {
-        throw new Error('No matching symbols found for market data');
+        console.log('No matching symbols found for market data');
+        return 0;
       }
 
       // Upsert price data

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { detectSymbolInfo } from './useSmartSymbolDetection';
 
 export const useAutoAddSymbol = () => {
   const [loading, setLoading] = useState(false);
@@ -10,19 +11,28 @@ export const useAutoAddSymbol = () => {
   const autoAddSymbol = async (
     symbol: string, 
     name: string, 
-    exchangeCode: string = 'NYSE', 
-    currency: string = 'USD'
+    exchangeCode?: string, 
+    currency?: string
   ) => {
     try {
       setLoading(true);
       console.log(`Auto-adding symbol: ${symbol} to symbols table`);
+      
+      // Auto-detect symbol info if not provided
+      const symbolInfo = exchangeCode && currency 
+        ? { exchangeCode, currency }
+        : detectSymbolInfo(symbol);
       
       // First check if symbol already exists
       const { data: existing, error: checkError } = await supabase
         .from('symbols')
         .select('id')
         .eq('symbol', symbol.toUpperCase())
-        .single();
+        .maybeSingle();
+
+      if (checkError && !checkError.message.includes('No rows found')) {
+        throw checkError;
+      }
 
       if (existing) {
         console.log('Symbol already exists:', existing.id);
@@ -33,11 +43,15 @@ export const useAutoAddSymbol = () => {
       const { data: exchange, error: exchangeError } = await supabase
         .from('exchanges')
         .select('id')
-        .eq('code', exchangeCode)
-        .single();
+        .eq('code', symbolInfo.exchangeCode)
+        .maybeSingle();
 
-      if (exchangeError) {
-        throw new Error(`Exchange ${exchangeCode} not found`);
+      if (exchangeError && !exchangeError.message.includes('No rows found')) {
+        throw exchangeError;
+      }
+
+      if (!exchange) {
+        throw new Error(`Exchange ${symbolInfo.exchangeCode} not found. Please ensure the exchange exists.`);
       }
 
       // Add new symbol
@@ -47,7 +61,7 @@ export const useAutoAddSymbol = () => {
           symbol: symbol.toUpperCase(),
           name: name,
           exchange_id: exchange.id,
-          currency: currency,
+          currency: symbolInfo.currency,
           is_in_portfolio: false,
           is_active: true
         }])
@@ -68,7 +82,7 @@ export const useAutoAddSymbol = () => {
       console.error('Error adding symbol:', error);
       toast({
         title: 'Error',
-        description: `Failed to add symbol ${symbol}`,
+        description: `Failed to add symbol ${symbol}: ${error.message}`,
         variant: 'destructive'
       });
       throw error;
