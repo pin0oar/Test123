@@ -14,10 +14,15 @@ export const useDataSync = () => {
     try {
       console.log(`Auto-adding symbol: ${symbol} to symbols table`);
       
-      // Auto-detect if not provided
-      const symbolInfo = exchangeCode && currency 
+      // Auto-detect if not provided, but use standard exchange codes
+      let symbolInfo = exchangeCode && currency 
         ? { exchangeCode, currency }
         : detectSymbolInfo(symbol);
+      
+      // Map to standard exchange codes that exist in the database
+      if (symbolInfo.exchangeCode === 'Saudi Stock Exchange') {
+        symbolInfo.exchangeCode = 'TADAWUL';
+      }
       
       // First check if symbol already exists
       const { data: existing, error: checkError } = await supabase

@@ -40,8 +40,8 @@ export const AddHoldingModal = ({ isOpen, onClose, portfolio, onHoldingAdded }: 
     try {
       setLoading(true);
 
-      // Auto-add ticker to tracked_tickers if it doesn't exist
-      await addTickerIfNotExists(
+      // Auto-add ticker to symbols table and get the symbol_id
+      const symbolId = await addTickerIfNotExists(
         selectedTicker.symbol,
         selectedTicker.name,
         selectedTicker.exchange,
@@ -53,7 +53,7 @@ export const AddHoldingModal = ({ isOpen, onClose, portfolio, onHoldingAdded }: 
       const price = parseFloat(avgPrice);
       const totalValue = qty * price;
 
-      // Add holding to portfolio
+      // Add holding to portfolio with symbol_id
       const { error } = await supabase
         .from('holdings')
         .insert({
@@ -68,7 +68,8 @@ export const AddHoldingModal = ({ isOpen, onClose, portfolio, onHoldingAdded }: 
           total_value: totalValue,
           pnl: 0, // No P&L initially
           pnl_percentage: 0,
-          currency: 'USD'
+          currency: 'USD',
+          symbol_id: symbolId // Ensure symbol_id is set
         });
 
       if (error) throw error;
